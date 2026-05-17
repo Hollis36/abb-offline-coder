@@ -119,6 +119,25 @@
     70%, 90% { opacity: 0.35; }
   }
 
+  /* ------------- CJK typography ------------- */
+  /* 中文标题：不在词中拆开 + 严格 CJK 标点规则 + 平衡换行 */
+  h2.section-title,
+  .hero-title,
+  .hero-blurb,
+  .feature h3,
+  .specimen-input-text,
+  .demo-prompt,
+  .sample-prompt,
+  .section-title em {
+    word-break: keep-all;
+    line-break: strict;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    hyphens: manual;
+  }
+  /* 不可拆词组 */
+  .nb { white-space: nowrap; }
+
   /* ------------- Layout helpers ------------- */
   .container {
     max-width: 1180px;
@@ -1085,8 +1104,8 @@
       </h1>
 
       <p class="hero-blurb reveal">
-        把中文一句话变成 <b>ABB RAPID 喷涂程序</b>。
-        本地小模型 + 官方手册 RAG，工业 PC 断网可用。
+        <span class="nb">把中文一句话变成</span> <b><span class="nb">ABB RAPID 喷涂程序</span></b>。<wbr>
+        <span class="nb">本地小模型</span> + <span class="nb">官方手册 RAG</span>，<wbr><span class="nb">工业 PC 断网可用</span>。
       </p>
 
       <ul class="hero-tags reveal">
@@ -1120,7 +1139,7 @@
 
         <div class="specimen-input">
           <div class="specimen-input-head"><span class="dot"></span>用户输入 · 中文</div>
-          <div class="specimen-input-text">"对 600×400 矩形面做 Z 字扫描喷涂，行距 50 mm，喷涂速度 v200"</div>
+          <div class="specimen-input-text">"<span class="nb">对 600×400 矩形面</span><wbr><span class="nb">做 Z 字扫描喷涂，</span><wbr><span class="nb">行距 50 mm，</span><wbr><span class="nb">喷涂速度 v200</span>"</div>
           <dl class="specimen-meta">
             <dt>类别</dt> <dd>zigzag_scan</dd>
             <dt>检索</dt> <dd>top-5 / 7497</dd><br>
@@ -1167,7 +1186,7 @@
     <div class="grid-two">
       <div>
         <span class="label"><span class="label-num">01</span> Abstract</span>
-        <h2 class="section-title">现场工程师不上网，也能 <em>「写一句话出一个程序」</em>。</h2>
+        <h2 class="section-title"><span class="nb">现场工程师不上网，</span><wbr><span class="nb">也能</span><wbr><em><span class="nb">「写一句话出一个程序」</span></em>。</h2>
         <p class="lead">
           ABB 喷涂机器人编程涉及大量专业概念：笔刷工艺（BrushData）、TriggIO 同步喷枪、
           TCP 校准、扫描轨迹规划。工业 PC 长期断网，工程师只能翻官方手册手写。
@@ -1207,7 +1226,7 @@
 <section class="section" id="demo">
   <div class="container">
     <span class="label"><span class="label-num">02</span> Live Pipeline</span>
-    <h2 class="section-title">把流水线 <em>一格一格</em> 走给你看。</h2>
+    <h2 class="section-title"><span class="nb">把流水线</span> <em><span class="nb">一格一格</span></em> <span class="nb">走给你看</span>。</h2>
     <p class="lead">点击 <code>RUN</code>，看用户输入如何穿过查询改写、向量检索、本地 LLM、语法校验，最终落地为可导入的 <code>.mod</code> 文件。</p>
 
     <div class="demo-board">
@@ -1218,7 +1237,7 @@
         </div>
         <div class="demo-input">
           <h4>用户中文需求</h4>
-          <div class="demo-prompt" id="demo-prompt">用 TriggIO 实现精确同步：从 p1 到 p2 直线运动中，距 p1 80mm 时打开喷枪，距 p1 500mm 时关闭喷枪</div>
+          <div class="demo-prompt" id="demo-prompt"><span class="nb">用 TriggIO 实现精确同步：</span><wbr><span class="nb">从 p1 到 p2 直线运动中，</span><wbr><span class="nb">距 p1 80mm 时打开喷枪，</span><wbr><span class="nb">距 p1 500mm 时关闭喷枪</span></div>
 
           <ol class="demo-step-list" id="demo-steps">
             <li data-step="1">
@@ -1286,7 +1305,7 @@
 <section class="section" id="architecture">
   <div class="container">
     <span class="label"><span class="label-num">03</span> Architecture</span>
-    <h2 class="section-title">分层流水线 <em>· 可单元替换 ·</em> 全离线。</h2>
+    <h2 class="section-title"><span class="nb">分层流水线</span> <em><span class="nb">· 可单元替换 ·</span></em><wbr> <span class="nb">全离线</span>。</h2>
     <p class="lead">从 CLI 入口到 <code>.mod</code> 文件落地，每一层都是单一职责的纯函数 / 单类。换 LLM、换向量库、换嵌入模型都不需要改其它层。</p>
 
     <div class="arch-wrap">
@@ -1336,7 +1355,7 @@
 <section class="section" id="features">
   <div class="container">
     <span class="label"><span class="label-num">04</span> Highlights</span>
-    <h2 class="section-title">为现场工程师设计 <em>·</em> 不是为 demo 设计。</h2>
+    <h2 class="section-title"><span class="nb">为现场工程师设计</span> <em>·</em><wbr> <span class="nb">不是为 demo 设计</span>。</h2>
 
     <div class="features">
       <div class="feature">
@@ -1392,7 +1411,7 @@
 <section class="section" id="samples">
   <div class="container">
     <span class="label"><span class="label-num">05</span> Specimens</span>
-    <h2 class="section-title">真实生成 · <em>非样例桩</em>。</h2>
+    <h2 class="section-title"><span class="nb">真实生成</span> ·<wbr> <em><span class="nb">非样例桩</span></em>。</h2>
     <p class="lead">下面 3 段代码来自 <code>output/</code> 目录的真实端到端生成。模型本身不知道 <code>MToolTCPCalib</code> 这种 ABB 专属指令名 —— RAG 注入知识后，模型正确写出了使用流程。</p>
 
     <div class="samples-grid">
@@ -1478,7 +1497,7 @@
 <section class="section" id="spec">
   <div class="container">
     <span class="label"><span class="label-num">06</span> Spec Sheet</span>
-    <h2 class="section-title">技术指标 <em>·</em> 实测数据。</h2>
+    <h2 class="section-title"><span class="nb">技术指标</span> <em>·</em><wbr> <span class="nb">实测数据</span>。</h2>
 
     <div class="spec">
       <div class="spec-head">
@@ -1506,7 +1525,7 @@
 <section class="section" id="install">
   <div class="container">
     <span class="label"><span class="label-num">07</span> Quickstart</span>
-    <h2 class="section-title">五行命令 <em>·</em> 上手。</h2>
+    <h2 class="section-title"><span class="nb">五行命令</span> <em>·</em><wbr> <span class="nb">上手</span>。</h2>
     <p class="lead">假设已经装好 <code>Python 3.10+</code> 和 <code>Ollama</code>。详细的 Windows 工业 PC 部署看 <a href="WINDOWS.html" style="color:var(--signal);text-decoration:underline">WINDOWS.md</a>。</p>
 
     <div class="quick-board">
