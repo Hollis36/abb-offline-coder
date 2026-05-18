@@ -2,9 +2,19 @@
 
 **离线 AI 编程助手 - 用中文描述需求，生成 ABB 喷涂机器人 RAPID 程序**
 
+### 🌐 [访问项目演示页 → hollis36.github.io/abb-offline-coder](https://hollis36.github.io/abb-offline-coder/)
+
+> 含交互式 Pipeline 演示、架构图、真实生成的 .mod 样本、性能规格表、安装指南。
+
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Online-d94a1f?style=for-the-badge)](https://hollis36.github.io/abb-offline-coder/)
+[![GitHub](https://img.shields.io/badge/Source-GitHub-131313?style=for-the-badge&logo=github)](https://github.com/Hollis36/abb-offline-coder)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-67%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-67%20passed-brightgreen.svg)](#testing)
+[![Pages](https://img.shields.io/github/deployments/Hollis36/abb-offline-coder/github-pages?label=pages)](https://hollis36.github.io/abb-offline-coder/)
+
+---
 
 > ⚠️ **免责声明**：本项目与 ABB Ltd. 无任何关联，不被 ABB 官方支持或认可。"ABB"、"RobotStudio"、"RAPID" 等均为 ABB Ltd. 商标。本工具是独立的第三方实用工具，仅用于辅助 RAPID 编程工作流。所有生成的代码必须在 RobotStudio 中**仿真验证**后才能上机，作者不对代码正确性或安全性承担任何责任。
 
