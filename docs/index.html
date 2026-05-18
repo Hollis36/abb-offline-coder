@@ -388,13 +388,25 @@
   .specimen-label {
     position: absolute;
     top: -10px; left: 24px;
+    z-index: 5;                 /* 浮在深色 output 面板之上 */
     background: var(--paper);
-    padding: 0 10px;
+    padding: 2px 12px;
+    border: 1px solid var(--ink); /* 像工程图上的贴纸 */
     font-family: var(--font-mono);
     font-size: 11px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     color: var(--ink);
     text-transform: uppercase;
+    line-height: 1.4;
+    white-space: nowrap;        /* 不让浏览器自动换行截断 */
+  }
+  .specimen-label::before {
+    content: "";
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--signal);
+    margin-right: 8px;
+    vertical-align: 1px;
   }
   .specimen-input {
     padding: 24px 26px;
