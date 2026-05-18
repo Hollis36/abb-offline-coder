@@ -2,9 +2,13 @@
 
 **离线 AI 编程助手 - 用中文描述需求，生成 ABB 喷涂机器人 RAPID 程序**
 
+<a href="https://hollis36.github.io/abb-offline-coder/">
+  <img src="docs/screenshots/00-banner.png" alt="abb-offline-coder live demo banner" width="100%">
+</a>
+
 ### 🌐 [访问项目演示页 → hollis36.github.io/abb-offline-coder](https://hollis36.github.io/abb-offline-coder/)
 
-> 含交互式 Pipeline 演示、架构图、真实生成的 .mod 样本、性能规格表、安装指南。
+> 含交互式 Pipeline 演示、架构图、真实生成的 .mod 样本、性能规格表、安装指南。点上面截图直达。
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Online-d94a1f?style=for-the-badge)](https://hollis36.github.io/abb-offline-coder/)
 [![GitHub](https://img.shields.io/badge/Source-GitHub-131313?style=for-the-badge&logo=github)](https://github.com/Hollis36/abb-offline-coder)
@@ -13,6 +17,55 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-67%20passed-brightgreen.svg)](#testing)
 [![Pages](https://img.shields.io/github/deployments/Hollis36/abb-offline-coder/github-pages?label=pages)](https://hollis36.github.io/abb-offline-coder/)
+
+---
+
+## 演示页一览
+
+<table>
+  <tr>
+    <td width="50%">
+      <a href="https://hollis36.github.io/abb-offline-coder/#demo">
+        <img src="docs/screenshots/02-demo.png" alt="交互式 Pipeline 演示">
+      </a>
+      <div align="center"><b>02 · Live Pipeline</b><br><sub>6 步流水线动画 + 真实 .mod 流式输出</sub></div>
+    </td>
+    <td width="50%">
+      <a href="https://hollis36.github.io/abb-offline-coder/#architecture">
+        <img src="docs/screenshots/03-architecture.png" alt="架构图">
+      </a>
+      <div align="center"><b>03 · Architecture</b><br><sub>分层流水线 ASCII 工程图</sub></div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://hollis36.github.io/abb-offline-coder/#features">
+        <img src="docs/screenshots/04-highlights.png" alt="9 个特性卡片">
+      </a>
+      <div align="center"><b>04 · Highlights</b><br><sub>9 个核心特性卡片</sub></div>
+    </td>
+    <td>
+      <a href="https://hollis36.github.io/abb-offline-coder/#samples">
+        <img src="docs/screenshots/05-samples.png" alt="真实 RAPID 样本">
+      </a>
+      <div align="center"><b>05 · Specimens</b><br><sub>3 个真实生成的 .mod 样本</sub></div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://hollis36.github.io/abb-offline-coder/#spec">
+        <img src="docs/screenshots/06-spec.png" alt="技术规格表">
+      </a>
+      <div align="center"><b>06 · Spec Sheet</b><br><sub>实测性能数据 / 工程铭牌风格</sub></div>
+    </td>
+    <td>
+      <a href="docs/screenshots/99-fullpage.jpeg">
+        <img src="docs/screenshots/01-hero.png" alt="完整页面">
+      </a>
+      <div align="center"><b>📜 Full page</b><br><sub><a href="docs/screenshots/99-fullpage.jpeg">点击查看 9302px 全页 JPEG</a></sub></div>
+    </td>
+  </tr>
+</table>
 
 ---
 
