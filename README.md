@@ -127,23 +127,33 @@ python scripts/build_knowledge_base.py
 abb-agent doctor
 ```
 
-### 离线部署（工业 PC）
+### 离线部署 / 迁移到新设备（一键脚本）
 
-在有网工作站上打包：
+在「已配置好的源设备」跑这一条命令，把整套环境（代码 + 模型 + 向量库 + 手册 + Python wheels）打成单文件：
 
 ```bash
-bash scripts/package_offline.sh
-# 产物：dist/abb-agent-offline-<日期>.tar.gz
+bash scripts/bundle.sh           # macOS / Linux
+scripts\bundle.bat               # Windows
 ```
 
-把 tar.gz 拷到工业 PC：
+零参数，自动收集**全部**：源码 / docs / 已下的 ABB PDF / ChromaDB 向量库 / bge 嵌入模型 / Ollama LLM 模型 / 离线 Python wheels；产出 `dist/abb-bundle-<日期>.tar.gz` 并附带 SHA256 校验。
+
+把这个文件拷到新设备（Windows 工业 PC、Mac、Linux 都行），解压后**一行**还原：
 
 ```bash
-tar -xzf abb-agent-offline-*.tar.gz
-cd offline-bundle-*
-bash scripts/install.sh --offline       # 或 scripts\install.bat /offline
-ollama serve &                          # 启动服务
-abb-agent doctor                        # 应全绿
+tar -xzf abb-bundle-*.tar.gz && cd abb-bundle-*
+bash restore.sh                  # macOS / Linux  (会自动用本地 wheels 离线装依赖
+                                 #                + 合并 Ollama 模型 + 自检)
+restore.bat                      # Windows
+```
+
+还原脚本内置 5 步：检查 Python ≥ 3.10 → 建 .venv 离线装依赖 → 合并 Ollama 模型到 `~/.ollama/models/` → 验证向量库 / 嵌入 → 给出 doctor + gen 演示命令。
+
+如果只想做**精简打包**（无 Ollama 模型 / 无 wheels），仍可用旧的带参数版本：
+
+```bash
+bash scripts/package_offline.sh --skip-ollama --no-wheels
+scripts\package_offline.bat /offline
 ```
 
 ### 使用 - 单次生成
