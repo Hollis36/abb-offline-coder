@@ -6,9 +6,15 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+ControllerKind = Literal["IRC5", "IRC5P"]
+
+# IO 白名单条目数硬上限，防 env var 注入超长字符串
+_MAX_IO_WHITELIST_ENTRIES = 1000
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -75,6 +81,52 @@ class RAGConfig(BaseSettings):
     collection_name: str = "abb_rapid_knowledge"
 
 
+class RapidConfig(BaseSettings):
+    """RAPID 代码生成相关配置。
+
+    controller 决定输出风格：
+      - "IRC5": 通用控制器，使用 MoveL + SetDO 实现喷涂（无 Paint 选项时可用）。
+      - "IRC5P": IRC5 Paint 控制器，使用 PaintL/PaintC + brushdata，配套 RobotWare Paint 选项。
+    io_whitelist 是控制器 EIO.cfg 中已注册的 IO 信号集合。
+    校验器会拒绝引用白名单外的信号（避免到现场报 40212 信号未定义）。
+
+    env var 设置 io_whitelist 支持两种语法（CSV 优先，回退 JSON 数组）：
+      ABB_AGENT_RAPID_IO_WHITELIST='doA,doB,doC'
+      ABB_AGENT_RAPID_IO_WHITELIST='["doA","doB","doC"]'
+    """
+
+    model_config = SettingsConfigDict(env_prefix="ABB_AGENT_RAPID_", extra="ignore")
+
+    controller: ControllerKind = "IRC5"
+    # 注：声明为 str | tuple[str, ...] 是为了让 pydantic-settings 跳过自动 JSON 解析；
+    #     field_validator 会在赋值后统一规范化为 tuple[str, ...]。
+    io_whitelist: str | tuple[str, ...] = (
+        "doSprayOn",
+        "doFanOn",
+        "doAtomOn",
+        "doPaintOn",
+        "diBrushOK",
+    )
+    default_brush_name: str = "bdMain"
+
+    @field_validator("io_whitelist", mode="after")
+    @classmethod
+    def _parse_whitelist(cls, v: object) -> tuple[str, ...]:
+        """允许三种输入：tuple/list、CSV 字符串、JSON 数组字符串。"""
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                import json
+                items = json.loads(stripped)
+                parts = tuple(str(x).strip() for x in items if str(x).strip())
+            else:
+                parts = tuple(s.strip() for s in stripped.split(",") if s.strip())
+            return parts[:_MAX_IO_WHITELIST_ENTRIES]
+        if isinstance(v, (list, tuple)):
+            return tuple(str(x) for x in v)[:_MAX_IO_WHITELIST_ENTRIES]
+        return tuple()
+
+
 class AppConfig(BaseSettings):
     """应用顶层配置，组合所有子配置。"""
 
@@ -84,6 +136,7 @@ class AppConfig(BaseSettings):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     embed: EmbedConfig = Field(default_factory=EmbedConfig)
     rag: RAGConfig = Field(default_factory=RAGConfig)
+    rapid: RapidConfig = Field(default_factory=RapidConfig)
 
     log_level: str = "INFO"
     locale: str = "zh"
