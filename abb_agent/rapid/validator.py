@@ -11,13 +11,22 @@
   7. 字符串引号配对
   8. 数据类型常量出现位置（VAR/PERS/CONST 必须在 PROC 外或顶部）
 
+外加 IRC5P 专项检查（当 controller="IRC5P" 时启用）：
+  - PNT001: PaintL/PaintC 缺少 brushdata 形参
+  - TCP001: tooldata 仍为默认占位 TCP（strict_tcp=True 时启用）
+  - IO001 : 引用了不在 EIO.cfg 白名单中的 IO 信号
+
 返回 ValidationReport，由调用方决定如何处理（修复 / 警告 / 拒绝）。
 """
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Literal
+
+ControllerKind = Literal["IRC5", "IRC5P"]
 
 
 class Severity(str, Enum):
@@ -73,11 +82,27 @@ RAPID_KEYWORDS = frozenset(
         "VAR", "PERS", "CONST", "LOCAL", "TASK", "GLOBAL",
         "MoveJ", "MoveL", "MoveC", "MoveAbsJ", "MoveLDO", "MoveJDO", "MoveCDO",
         "MoveLSync", "MoveJSync", "MoveCSync",
+        "PaintL", "PaintC",
         "TriggL", "TriggC", "TriggJ", "TriggIO", "TriggData", "TriggEquip",
         "SetDO", "Reset", "SetAO", "WaitDI", "WaitDO", "PulseDO",
         "WaitTime", "Stop", "EXIT",
     ]
 )
+
+# 引用 IO 信号的指令 → 第一个位置参数是信号名
+IO_INSTRUCTIONS = frozenset(
+    ["SetDO", "Reset", "SetAO", "WaitDI", "WaitDO", "PulseDO"]
+)
+
+# 喷涂 helpers 当前注入的默认 TCP（[0,0,200]），现场必须重新标定。
+# 兼容 [0,0,200] / [0.0, 0, 200.0] / 任意空格/小数 0.x 形式。
+DEFAULT_TCP_PATTERN = re.compile(
+    r"\[\s*0(?:\.0+)?\s*,\s*0(?:\.0+)?\s*,\s*200(?:\.0+)?\s*\]",
+    re.IGNORECASE,
+)
+
+# 只有这些前缀的标识符才算 IO 信号；其它（如 clock 变量）一律忽略。
+IO_SIGNAL_PREFIXES = ("do", "di", "ao", "ai", "go", "gi")
 
 
 # 块结构配对表：开始关键字 -> 结束关键字（按顺序匹配嵌套）
@@ -245,11 +270,161 @@ def _check_module_declaration(lines: list[str]) -> list[ValidationIssue]:
     return issues
 
 
-def validate(code: str) -> ValidationReport:
+def _split_args(arg_str: str) -> list[str]:
+    """按顶层逗号切分参数串。忽略 [] () 内的逗号。"""
+    parts: list[str] = []
+    depth = 0
+    buf: list[str] = []
+    for ch in arg_str:
+        if ch in "[(":
+            depth += 1
+            buf.append(ch)
+        elif ch in "])":
+            depth -= 1
+            buf.append(ch)
+        elif ch == "," and depth == 0:
+            parts.append("".join(buf).strip())
+            buf = []
+        else:
+            buf.append(ch)
+    if buf:
+        parts.append("".join(buf).strip())
+    return [p for p in parts if p]
+
+
+# 在一行任意位置查找 PaintL/PaintC 调用，捕获到下一个分号为止的参数串。
+# 这样 `IF cond THEN PaintL ...;` 这种内联格式也能被检出（M1）。
+_PAINT_CALL_RE = re.compile(r"\b(PaintL|PaintC)\s+([^;]+);")
+_BRUSHDATA_DECL_RE = re.compile(r"\bbrushdata\s+([A-Za-z_][A-Za-z0-9_]*)")
+_TOOLDATA_DECL_RE = re.compile(
+    r"\btooldata\s+([A-Za-z_][A-Za-z0-9_]*)\s*:=\s*(.+?);", re.DOTALL
+)
+_IO_CALL_RE = re.compile(
+    r"^\s*(SetDO|Reset|SetAO|WaitDI|WaitDO|PulseDO)\s+([A-Za-z_][A-Za-z0-9_]*)"
+)
+
+
+def _check_paint_brushdata(lines: list[str]) -> list[ValidationIssue]:
+    """IRC5P: PaintL 要 ≥5 个位置参数；PaintC 要 ≥6 个。
+
+    PaintL: target, speed, brushdata, zone, tool [\\WObj:=wobj]
+    PaintC: pMid, pEnd, speed, brushdata, zone, tool [\\WObj:=wobj]
+    我们用「已知的 brushdata 名称集合」做交叉校验：声明里出现的 bdXxx 应在调用里被引用。
+    退化情形（无法解析）：用参数计数作为兜底。
+    """
+    code = "\n".join(lines)
+    declared_brushes = set(_BRUSHDATA_DECL_RE.findall(code))
+
+    issues: list[ValidationIssue] = []
+    for ln_idx, raw in enumerate(lines, start=1):
+        line = _strip_comments(raw)
+        # 同一行可能有多个 PaintL/PaintC（IF...THEN PaintL ...; PaintL ...; ENDIF）
+        for m in _PAINT_CALL_RE.finditer(line):
+            instr = m.group(1)
+            # 把 \WObj:=xxx 这种 switch 参数剥离（值可以是标识符/数字/路径）
+            body = re.sub(r"\\[A-Za-z]+\s*:=\s*[^,;\s\\]+", "", m.group(2))
+            args = _split_args(body)
+
+            min_args = 5 if instr == "PaintL" else 6
+            if len(args) < min_args:
+                issues.append(
+                    ValidationIssue(
+                        ln_idx, Severity.ERROR, "PNT001",
+                        f"{instr} 参数数量 {len(args)} 不足 ({min_args})，"
+                        f"很可能缺少 brushdata 形参",
+                    )
+                )
+                continue
+
+            # 进一步检查：若声明过 brushdata，则调用中应包含其中一个名字
+            if declared_brushes:
+                tokens = {tok for arg in args for tok in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", arg)}
+                if not (tokens & declared_brushes):
+                    issues.append(
+                        ValidationIssue(
+                            ln_idx, Severity.ERROR, "PNT001",
+                            f"{instr} 没有引用任何已声明的 brushdata "
+                            f"({', '.join(sorted(declared_brushes))})",
+                        )
+                    )
+    return issues
+
+
+def _check_default_tcp(lines: list[str]) -> list[ValidationIssue]:
+    """tooldata 偏移仍是默认 [0,0,200] 时强提示现场标定。"""
+    issues: list[ValidationIssue] = []
+    code = "\n".join(lines)
+    for m in _TOOLDATA_DECL_RE.finditer(code):
+        decl_body = m.group(2)
+        # 计算声明所在行号（取 := 出现的位置）
+        decl_pos = m.start()
+        ln_idx = code.count("\n", 0, decl_pos) + 1
+        if DEFAULT_TCP_PATTERN.search(decl_body):
+            issues.append(
+                ValidationIssue(
+                    ln_idx, Severity.ERROR, "TCP001",
+                    f"tooldata '{m.group(1)}' 使用默认占位 TCP [0,0,200]，"
+                    "上控制器前必须 4 点法重新标定",
+                )
+            )
+    return issues
+
+
+def _looks_like_io_signal(name: str) -> bool:
+    """启发式：标识符以 IO 命名前缀（do/di/ao/ai/go/gi）开头才算 IO。
+
+    这样 `Reset stopwatch1;` 这种 clock 复位不会被误报为 IO001。
+    业内 RAPID 编程约定 IO 信号必以 do_/di_ 前缀命名。
+    """
+    return any(name.lower().startswith(p) for p in IO_SIGNAL_PREFIXES)
+
+
+def _check_io_whitelist(
+    lines: list[str], whitelist: Iterable[str]
+) -> list[ValidationIssue]:
+    """检查代码引用的 IO 信号是否都在 EIO.cfg 白名单中。
+
+    去重：同一未知信号引用多次只报一次（M5）。
+    """
+    allowed = set(whitelist)
+    issues: list[ValidationIssue] = []
+    reported: set[str] = set()
+    for ln_idx, raw in enumerate(lines, start=1):
+        line = _strip_comments(raw)
+        m = _IO_CALL_RE.match(line)
+        if not m:
+            continue
+        signal = m.group(2)
+        # 跳过明显不是 IO 的标识符（如 clock 变量名）
+        if not _looks_like_io_signal(signal):
+            continue
+        if signal in allowed or signal in reported:
+            continue
+        reported.add(signal)
+        issues.append(
+            ValidationIssue(
+                ln_idx, Severity.ERROR, "IO001",
+                f"IO 信号 '{signal}' 不在 EIO.cfg 白名单中。"
+                f"已知信号: {', '.join(sorted(allowed)) or '(空)'}",
+            )
+        )
+    return issues
+
+
+def validate(
+    code: str,
+    *,
+    controller: ControllerKind = "IRC5",
+    io_whitelist: Iterable[str] | None = None,
+    strict_tcp: bool = False,
+) -> ValidationReport:
     """对完整 RAPID 代码做静态校验。
 
     Args:
         code: RAPID 源码字符串
+        controller: 控制器类型；"IRC5P" 时启用 PaintL/PaintC brushdata 检查
+        io_whitelist: 控制器 EIO.cfg 中已注册的信号集；None 跳过 IO 检查
+        strict_tcp: True 时若 tooldata 仍为默认 TCP 占位则报错（上线前应开启）
 
     Returns:
         ValidationReport: 所有问题汇总
@@ -261,4 +436,13 @@ def validate(code: str) -> ValidationReport:
     issues.extend(_check_keyword_case(lines))
     issues.extend(_check_semicolons(lines))
     issues.extend(_check_quotes(lines))
+
+    if controller == "IRC5P":
+        issues.extend(_check_paint_brushdata(lines))
+        if strict_tcp:
+            issues.extend(_check_default_tcp(lines))
+
+    if io_whitelist is not None:
+        issues.extend(_check_io_whitelist(lines, io_whitelist))
+
     return ValidationReport(issues=tuple(issues))

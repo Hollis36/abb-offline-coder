@@ -4,10 +4,16 @@
 保证语法 100% 正确。即使 LLM 表现差，关键路径仍可用。
 
 所有函数都是纯函数，返回 RAPID 代码字符串。
+
+controller 参数控制输出风格：
+  - "IRC5"  (默认)：通用控制器，用 MoveL + SetDO 实现喷涂开关
+  - "IRC5P"：IRC5 Paint 控制器，用 PaintL/PaintC + brushdata 走 ABB Paint 工艺
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from abb_agent.config import ControllerKind
 
 
 @dataclass(frozen=True)
@@ -40,13 +46,34 @@ class BrushParams:
     post_close_ms: int = 50
 
 
-def brush_data_decl(name: str = "bdMain", params: BrushParams | None = None) -> str:
+def brush_data_decl(
+    name: str = "bdMain",
+    params: BrushParams | None = None,
+    *,
+    controller: ControllerKind = "IRC5",
+) -> str:
     """生成 brushdata 声明。
 
-    注意：brushdata 是 ABB Paint 选项才有的特殊数据类型。普通 IRC5 无 Paint
-    选项时，用我们自定义的 num/PERS 表示。
+    - IRC5  (默认)：无 Paint 选项的通用控制器，用 num/PERS 表示工艺参数。
+    - IRC5P：使用 ABB Paint 原生 brushdata 类型，可被 PaintL/PaintC 直接消费。
+
+    注意：brushdata 字段顺序随 RobotWare Paint 版本略有差异，下面采用 ABB 5.x/6.x
+    常见结构 [flow, fan, atom, preOpen, postClose, brushOnTime, accept_brush, name, table_idx]。
+    上控制器前请对照实际 RobotWare 文档校核字段顺序。
     """
     p = params or BrushParams()
+    if controller == "IRC5P":
+        return (
+            f"    ! [WARNING] brushdata 字段顺序随 RobotWare Paint 版本不同。\n"
+            f"    ! 下面的 9 字段布局是基于 ABB Paint 5.x/6.x 常见模式的推断，\n"
+            f"    ! 上控制器前必须在 RobotStudio 中打开 Brush Table 对照校核！\n"
+            f"    ! 字段顺序: flow, fan, atom, preOpen, postClose, brushOnTime, "
+            f"accept_brush, name, brush_table_idx\n"
+            f"    PERS brushdata {name} := ["
+            f"{p.flow_rate}, {p.fan_width}, {p.atom_pressure}, "
+            f"{p.pre_open_ms}, {p.post_close_ms}, 0, "
+            f"FALSE, \"{name}\", 0];"
+        )
     return (
         f"    ! 喷涂工艺参数 - {name}\n"
         f"    PERS num {name}_flow := {p.flow_rate};        ! 流量百分比\n"
@@ -76,8 +103,21 @@ def linear_scan(
     tool: str = "tSprayGun",
     wobj: str = "wobjPart",
     spray_signal: str = "doSprayOn",
+    controller: ControllerKind = "IRC5",
+    brush: str = "bdMain",
 ) -> str:
-    """生成"开喷 → 直线扫描 → 关喷"RAPID 片段。"""
+    """生成「定位 → 喷涂直线段」RAPID 片段。
+
+    IRC5  (默认): MoveL 定位 → SetDO 开 → MoveL 喷 → SetDO 关。
+    IRC5P:       MoveL 定位 → PaintL（brushdata 自动调度工艺）。
+    """
+    if controller == "IRC5P":
+        return (
+            f"        ! 直线扫描喷涂段 (IRC5P PaintL)\n"
+            f"        MoveL {robtarget_inline(start)}, v500, fine, {tool}\\WObj:={wobj};\n"
+            f"        PaintL {robtarget_inline(end)}, {speed}, {brush}, {zone}, "
+            f"{tool}\\WObj:={wobj};"
+        )
     return (
         f"        ! 直线扫描喷涂段\n"
         f"        MoveL {robtarget_inline(start)}, v200, fine, {tool}\\WObj:={wobj};\n"
@@ -106,13 +146,20 @@ def zigzag_scan(
     tool: str = "tSprayGun",
     wobj: str = "wobjPart",
     spray_signal: str = "doSprayOn",
+    controller: ControllerKind = "IRC5",
+    brush: str = "bdMain",
 ) -> str:
     """Z 字扫描喷涂。
 
     工件坐标系下从 origin 开始，沿 X 方向往返，每次 Y 偏移 row_spacing。
+
+    IRC5  : 行间 MoveL 定位 + SetDO 切换喷涂状态。
+    IRC5P : 行间 MoveL 定位 + PaintL 走工艺（brushdata 自动管理开关枪时序）。
     """
     num_rows = int(height / row_spacing) + 1
-    lines = ["        ! Z 字扫描喷涂"]
+    is_paint = controller == "IRC5P"
+    header = "        ! Z 字扫描喷涂" + (" (IRC5P PaintL)" if is_paint else "")
+    lines = [header]
     for i in range(num_rows):
         y_off = i * row_spacing
         # 偶数行向右，奇数行向左
@@ -121,15 +168,21 @@ def zigzag_scan(
         p_start = Pose(x_start, origin.y + y_off, origin.z, origin.q1, origin.q2, origin.q3, origin.q4)
         p_end = Pose(x_end, origin.y + y_off, origin.z, origin.q1, origin.q2, origin.q3, origin.q4)
 
-        # 移动到起点（高速 fine）
+        # 行起点：高速定位（不喷）
         lines.append(
             f"        MoveL {robtarget_inline(p_start)}, v500, fine, {tool}\\WObj:={wobj};"
         )
-        lines.append(f"        SetDO {spray_signal}, 1;")
-        lines.append(
-            f"        MoveL {robtarget_inline(p_end)}, {speed}, {zone}, {tool}\\WObj:={wobj};"
-        )
-        lines.append(f"        SetDO {spray_signal}, 0;")
+        if is_paint:
+            lines.append(
+                f"        PaintL {robtarget_inline(p_end)}, {speed}, {brush}, {zone}, "
+                f"{tool}\\WObj:={wobj};"
+            )
+        else:
+            lines.append(f"        SetDO {spray_signal}, 1;")
+            lines.append(
+                f"        MoveL {robtarget_inline(p_end)}, {speed}, {zone}, {tool}\\WObj:={wobj};"
+            )
+            lines.append(f"        SetDO {spray_signal}, 0;")
     return "\n".join(lines)
 
 
@@ -190,9 +243,24 @@ def tcp_calibration_program(name: str = "CalibrateSprayTCP") -> str:
     )
 
 
-def arc_segment(p_start: Pose, p_mid: Pose, p_end: Pose, *, speed: str = "vPaint", zone: str = "z10",
-                tool: str = "tSprayGun", wobj: str = "wobjPart") -> str:
-    """圆弧路径段（MoveC）。"""
+def arc_segment(
+    p_start: Pose,
+    p_mid: Pose,
+    p_end: Pose,
+    *,
+    speed: str = "vPaint",
+    zone: str = "z10",
+    tool: str = "tSprayGun",
+    wobj: str = "wobjPart",
+    controller: ControllerKind = "IRC5",
+    brush: str = "bdMain",
+) -> str:
+    """圆弧路径段。IRC5 用 MoveC；IRC5P 用 PaintC（带 brushdata）。"""
+    if controller == "IRC5P":
+        return (
+            f"        PaintC {robtarget_inline(p_mid)}, {robtarget_inline(p_end)}, "
+            f"{speed}, {brush}, {zone}, {tool}\\WObj:={wobj};"
+        )
     return (
         f"        MoveC {robtarget_inline(p_mid)}, {robtarget_inline(p_end)}, "
         f"{speed}, {zone}, {tool}\\WObj:={wobj};"
