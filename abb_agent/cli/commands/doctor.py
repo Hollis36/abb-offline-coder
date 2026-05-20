@@ -30,8 +30,24 @@ def doctor_default() -> None:
     table.add_row(*_check_models(cfg.llm.model_name, cfg.llm.fallback_model))
     table.add_row(*_check_chroma(cfg.paths.chroma_dir))
     table.add_row(*_check_embedder(cfg.embed.cache_dir, cfg.embed.model_name))
+    table.add_row(*_check_controller_mode(cfg.rapid.controller, cfg.rapid.io_whitelist))
 
     console.print(table)
+
+
+def _check_controller_mode(controller: str, io_whitelist: tuple[str, ...]) -> tuple[str, str, str]:
+    """显示当前控制器模式与 IO 白名单。
+
+    IRC5P 是带 ABB Paint 选项的目标控制器，IRC5 是通用。
+    选错模式上线会导致 PaintL/brushdata 校验偏离实际。
+    """
+    if controller == "IRC5P":
+        status = "[green]✓[/green]"
+        detail = f"IRC5P (Paint 选项) | IO 白名单: {', '.join(io_whitelist[:3])}…"
+    else:
+        status = "[cyan]i[/cyan]"
+        detail = f"IRC5 通用 | 上 IRC5P 前请 ABB_AGENT_RAPID_CONTROLLER=IRC5P 或加 --controller IRC5P"
+    return ("控制器模式", status, detail)
 
 
 def _check_python() -> tuple[str, str, str]:

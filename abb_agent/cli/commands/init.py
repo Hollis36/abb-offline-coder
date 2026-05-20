@@ -26,6 +26,7 @@ def init_default() -> None:
             "  2. 检查 Ollama 服务\n"
             "  3. 校验本地模型\n"
             "  4. 提示如何放置 ABB 资料\n"
+            "  5. 显示当前控制器模式 + 上线前 IO/TCP 检查清单\n"
         )
     )
 
@@ -67,10 +68,34 @@ def init_default() -> None:
         console.print(f"    [cyan]ollama pull {primary}[/cyan]")
         console.print(f"    [cyan]ollama pull {fallback}[/cyan]  (备选，更小)")
 
-    console.print("\n[bold]步骤 4/4 - 准备 ABB 资料[/bold]")
+    console.print("\n[bold]步骤 4/5 - 准备 ABB 资料[/bold]")
     console.print(f"  请将资料放入：[cyan]{cfg.paths.raw_dir}[/cyan]")
     console.print("    - PDF 手册放在 [cyan]raw/pdf/[/cyan]")
     console.print("    - .mod 示例代码放在 [cyan]raw/code/[/cyan]")
     console.print("    - HTML 离线页放在 [cyan]raw/html/[/cyan]")
     console.print("\n  放好后运行：[cyan]abb-agent kb build[/cyan] 构建向量库")
+
+    console.print("\n[bold]步骤 5/5 - 控制器模式与上线前清单[/bold]")
+    console.print(f"  当前控制器: [bold]{cfg.rapid.controller}[/bold]")
+    console.print(f"  IO 白名单 ({len(cfg.rapid.io_whitelist)} 项): "
+                  f"{', '.join(cfg.rapid.io_whitelist)}")
+    if cfg.rapid.controller == "IRC5":
+        console.print(
+            "\n  [yellow]提示[/yellow]：若目标是 IRC5P（Paint 选项），运行前设环境变量："
+        )
+        console.print('    [cyan]export ABB_AGENT_RAPID_CONTROLLER=IRC5P[/cyan]')
+        console.print(
+            "  或在 gen 时加 [cyan]--controller IRC5P[/cyan]，否则生成的代码将走 SetDO 风格。"
+        )
+    else:
+        console.print("  [green]✓[/green] IRC5P 模式已启用，生成代码会用 PaintL/PaintC + brushdata")
+    console.print(
+        "\n  [yellow]上控制器前必做[/yellow]："
+    )
+    console.print("    1. 用 4 点法重新标定 [cyan]tSprayGun[/cyan] 的 TCP（默认 [0,0,200] 是占位）")
+    console.print("    2. 用 RobotStudio 打开控制器 EIO.cfg，把实际信号名喂给：")
+    console.print('       [cyan]export ABB_AGENT_RAPID_IO_WHITELIST=\'["doSpray","doFan",...]\'[/cyan]')
+    console.print("    3. 跑 [cyan]abb-agent gen --controller IRC5P --strict-tcp --bundle ...[/cyan]")
+    console.print("       会生成完整 Pack&Go 目录（含 .mod / .pgf / BASE.sys / README）")
+
     console.print("\n[green]初始化引导完毕[/green]")
