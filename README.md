@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-67%20passed-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-124%20passed-brightgreen.svg)](#testing)
 [![Pages](https://img.shields.io/github/deployments/Hollis36/abb-offline-coder/github-pages?label=pages)](https://hollis36.github.io/abb-offline-coder/)
 
 ---
@@ -78,6 +78,8 @@
 - **完全离线**：所有依赖（LLM、嵌入模型、向量库）本地运行，断网可用
 - **中文自然语言**：用中文描述喷涂需求，自动生成 RAPID 代码
 - **喷涂专精**：内置喷涂场景知识（笔刷工艺、TriggIO 同步、TCP 校准、Z 字扫描等）
+- **双控制器模式**：通用 `IRC5`（MoveL + SetDO）与 `IRC5P`（PaintL/PaintC + brushdata 原生工艺）一键切换
+- **Pack&Go 一键交付**：`--bundle` 模式直接产出含 `.mod` + `BASE.sys` + `T_ROB1.pgf` + README 的可加载目录
 - **可演进**：RAG 知识库可不断追加新资料，模型可随硬件升级而升级
 - **工业 PC 友好**：CPU 推理，无需独立 GPU，量化模型 4.5GB 内存即可
 
@@ -167,6 +169,35 @@ abb-agent gen "对 600x400 矩形面做 Z 字扫描喷涂，行距 50mm，速度
 - 校验报告（错误/警告）
 - 文件保存到 `output/PaintProgram_<时间戳>.mod`
 
+### 使用 - 生成可直接上 IRC5P 的 Pack&Go 目录
+
+```bash
+abb-agent gen \
+  --controller IRC5P \
+  --strict-tcp \
+  --bundle \
+  -o output/MyPaintLine \
+  "在 500x300mm 平板上 Z 字喷涂，行距 50mm"
+```
+
+会产出一个**完整可加载目录**：
+
+```
+output/MyPaintLine/
+├── PaintProgram.mod   # PaintL/PaintC + brushdata（IRC5P 原生工艺）
+├── BASE.sys           # 系统模块：Home 位 + 错误恢复 trap
+├── T_ROB1.pgf         # XML 任务清单（控制器据此加载）
+└── README.md          # 3 种加载方式 + 上线 4 步清单
+```
+
+**关键 flag**：
+
+| Flag | 作用 |
+|---|---|
+| `--controller IRC5\|IRC5P` | 选择目标控制器；IRC5P 会启用 PaintL/PaintC 工艺校验、IO 白名单检查 |
+| `--strict-tcp` | 若 tooldata 仍是默认占位 TCP `[0,0,200]` 则视为 error（上控制器前应开） |
+| `--bundle` / `-b` | 输出 Pack&Go 完整目录，不只是单 `.mod` 文件 |
+
 ### 使用 - 多轮对话
 
 ```bash
@@ -186,20 +217,6 @@ abb-agent chat
 你: /quit
 ```
 
-## 命令清单
-
-| 命令 | 说明 |
-|------|------|
-| `abb-agent gen "需求"` | 单次生成 RAPID 代码 |
-| `abb-agent chat` | 多轮对话模式 |
-| `abb-agent kb build` | 构建/增量更新知识库 |
-| `abb-agent kb status` | 查看知识库状态 |
-| `abb-agent kb inspect "查询"` | 测试检索质量 |
-| `abb-agent kb clear` | 清空知识库 |
-| `abb-agent init` | 首次安装引导 |
-| `abb-agent doctor` | 健康检查 |
-| `abb-agent version` | 显示版本 |
-
 ## 配置
 
 通过环境变量覆盖默认值（前缀 `ABB_AGENT_`）：
@@ -213,22 +230,58 @@ export ABB_AGENT_LLM__TEMPERATURE=0.4
 
 # 改用 GPU 推理（如果有）
 export ABB_AGENT_EMBED__DEVICE="cuda"
+
+# 全局切到 IRC5P 模式（持久；优先级低于命令行 --controller）
+export ABB_AGENT_RAPID_CONTROLLER=IRC5P
+
+# 用现场实际 IO 信号集覆盖默认白名单（JSON 数组字符串）
+export ABB_AGENT_RAPID_IO_WHITELIST='["doSpray","doFan","doAtom","doColorA"]'
 ```
 
 完整配置见 [abb_agent/config.py](abb_agent/config.py)。
 
+## 控制器模式：IRC5 vs IRC5P
+
+工具支持两种目标控制器，输出代码风格与校验规则不同：
+
+| 维度 | `IRC5`（默认） | `IRC5P` |
+|---|---|---|
+| 适用控制器 | 通用 IRC5 / OmniCore，无 Paint 选项 | IRC5P / OmniCore Paint，含 RobotWare Paint (687-1) |
+| 喷涂直线 | `MoveL` + `SetDO doSprayOn,1/0` | `PaintL target, speed, brushdata, zone, tool` |
+| 喷涂圆弧 | `MoveC` + `SetDO` | `PaintC pMid, pEnd, speed, brushdata, zone, tool` |
+| 工艺数据 | `PERS num` 占位 | `PERS brushdata` 原生类型 |
+| 开关枪时序 | 用户手动 `SetDO` 配 `WaitTime` | brushdata 的 `preOpen` / `postClose` 自动管理 |
+| 校验新增 | — | PNT001 (PaintL 缺 brushdata) / TCP001 (默认 TCP) / IO001 (白名单) |
+
+切换方式：命令行 `--controller IRC5P` 单次覆盖，或 `export ABB_AGENT_RAPID_CONTROLLER=IRC5P` 持久化。
+
+## 命令清单
+
+| 命令 | 说明 |
+|------|------|
+| `abb-agent gen "需求"` | 单次生成 RAPID 代码（默认 IRC5 风格） |
+| `abb-agent gen --controller IRC5P --bundle "需求"` | 生成可直接上 IRC5P 控制器的 Pack&Go 目录 |
+| `abb-agent chat` | 多轮对话模式 |
+| `abb-agent kb build` | 构建/增量更新知识库 |
+| `abb-agent kb status` | 查看知识库状态 |
+| `abb-agent kb inspect "查询"` | 测试检索质量 |
+| `abb-agent kb clear` | 清空知识库 |
+| `abb-agent init` | 首次安装引导（含控制器模式提示 + 上线清单） |
+| `abb-agent doctor` | 健康检查（显示当前控制器、IO 白名单等） |
+| `abb-agent version` | 显示版本 |
+
 ## 喷涂场景示例
 
-输入需求 → 生成代码摘要：
+输入需求 → 生成代码摘要（左 IRC5 默认 / 右 IRC5P 模式）：
 
-| 需求示例 | 生成的 RAPID 关键结构 |
-|---------|------------------|
-| "直线扫描，从 P1 到 P2" | `MoveL` + `SetDO doSprayOn` |
-| "Z 字扫描，行距 50mm" | `FOR` 循环 + 交替方向 `MoveL` |
-| "圆弧轨迹喷涂" | `MoveC` + brush data |
-| "TriggIO 精确同步喷枪开关" | `TriggIO` + `TriggL` |
-| "喷枪 TCP 校准 4 点法" | `TPWrite` 引导 + `ConfL\\Off` |
-| "增加流量调到 90%" | `PERS num nFlowRate := 90;` |
+| 需求示例 | IRC5 输出 | IRC5P 输出 |
+|---------|------------------|------------------|
+| "直线扫描，从 P1 到 P2" | `MoveL` + `SetDO doSprayOn` | `PaintL p, vPaint, bdMain, z10, tSprayGun` |
+| "Z 字扫描，行距 50mm" | `FOR` + 交替 `MoveL` + `SetDO` | `MoveL` 定位 + `PaintL` 喷涂 |
+| "圆弧轨迹喷涂" | `MoveC` + `SetDO` | `PaintC` + brushdata |
+| "TriggIO 精确同步喷枪开关" | `TriggIO` + `TriggL` | brushdata 内部时序自动管 |
+| "喷枪 TCP 校准 4 点法" | `TPWrite` 引导 + `ConfL\\Off` | 同左 |
+| "增加流量调到 90%" | `PERS num nFlowRate := 90;` | `PERS brushdata bdMain := [90, ...]` |
 
 ## 项目结构
 
@@ -295,10 +348,11 @@ pytest tests/unit --cov=abb_agent --cov-report=term-missing
 ## 路线图
 
 - [x] v0.1：CLI + RAG + 喷涂 few-shot
-- [ ] v0.2：增加 IRB 5500 / 6700 等机型专门 few-shot
-- [ ] v0.3：可选 GUI（基于 textual 或 web）
-- [ ] v0.4：RAPID parser 提升校验深度
-- [ ] v0.5：RobotStudio Add-In（C# 桥接）
+- [x] v0.2：IRC5P 模式 — PaintL/PaintC + brushdata + Pack&Go bundle 输出
+- [ ] v0.3：增加 IRB 5500 / 6700 等机型专门 few-shot
+- [ ] v0.4：可选 GUI（基于 textual 或 web）
+- [ ] v0.5：RAPID parser 提升校验深度
+- [ ] v0.6：RobotStudio Add-In（C# 桥接）
 
 ## 许可证
 
