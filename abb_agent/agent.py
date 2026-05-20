@@ -10,13 +10,14 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
 from loguru import logger
 
-from abb_agent.config import get_config
+from abb_agent.config import ControllerKind, get_config
 from abb_agent.llm.ollama_client import ChatMessage, OllamaClient
 from abb_agent.llm.prompts.templates import build_full_prompt, system_prompt
 from abb_agent.rag.context_builder import BuiltContext, ContextBuilder
@@ -73,13 +74,28 @@ def _extract_code_block(text: str) -> tuple[str, str]:
     return code, explanation
 
 
-def _postprocess(raw_code: str) -> tuple[str, ValidationReport]:
-    """对 LLM 输出做：包模块 → 格式化 → 校验。"""
+def _postprocess(
+    raw_code: str,
+    *,
+    controller: ControllerKind = "IRC5",
+    io_whitelist: Iterable[str] | None = None,
+    strict_tcp: bool = False,
+) -> tuple[str, ValidationReport]:
+    """对 LLM 输出做：包模块 → 格式化 → 校验。
+
+    controller / io_whitelist / strict_tcp 透传给 wrap_in_module 与 validate，
+    决定 IRC5P 专项检查是否启用。
+    """
     code = raw_code
     if not re.search(r"^\s*MODULE\b", code, re.MULTILINE):
-        code = wrap_in_module(code, module_name="PaintProgram")
+        code = wrap_in_module(code, module_name="PaintProgram", controller=controller)
     code = format_code(code)
-    report = validate(code)
+    report = validate(
+        code,
+        controller=controller,
+        io_whitelist=io_whitelist,
+        strict_tcp=strict_tcp,
+    )
     return code, report
 
 
@@ -104,9 +120,19 @@ class Agent:
         *,
         save_to: Path | None = None,
         include_few_shot: bool = True,
+        controller: ControllerKind | None = None,
+        strict_tcp: bool | None = None,
     ) -> GenerateResult:
-        """主入口：从中文需求生成 RAPID 代码。"""
+        """主入口：从中文需求生成 RAPID 代码。
+
+        controller / strict_tcp 不传时从 self._config.rapid 取默认值。
+        io_whitelist 永远从 config.rapid.io_whitelist 取（避免 CLI 处暴露过多）。
+        """
         start = datetime.now()
+
+        rapid_cfg = self._config.rapid
+        eff_controller = controller or rapid_cfg.controller
+        eff_strict_tcp = rapid_cfg.controller == "IRC5P" if strict_tcp is None else strict_tcp
 
         rewritten = rewrite(user_query)
         logger.debug("查询改写: 类别={}, 关键词={}", rewritten.category, rewritten.extracted_keywords)
@@ -115,7 +141,11 @@ class Agent:
         context = self._context_builder.build(retrieval_results)
         logger.debug("检索到 {} 条，使用上下文 {} 字符", len(retrieval_results), context.chars_used)
 
-        sys_p, user_p = build_full_prompt(rewritten, context, include_few_shot=include_few_shot)
+        sys_p, user_p = build_full_prompt(
+            rewritten, context,
+            include_few_shot=include_few_shot,
+            controller=eff_controller,
+        )
         gen_result = self._llm.generate(user_p, system=sys_p)
         # 确认是同步返回（不是流式 Iterator）
         from abb_agent.llm.ollama_client import GenerationResult as GR
@@ -127,7 +157,12 @@ class Agent:
             code = raw
             explanation = ""
 
-        final_code, report = _postprocess(code)
+        final_code, report = _postprocess(
+            code,
+            controller=eff_controller,
+            io_whitelist=rapid_cfg.io_whitelist,
+            strict_tcp=eff_strict_tcp,
+        )
         duration = int((datetime.now() - start).total_seconds() * 1000)
 
         if save_to:
@@ -148,8 +183,9 @@ class Agent:
 
     def chat_turn(self, session: ChatSession, user_message: str) -> GenerateResult:
         """多轮对话中的一轮。会追加用户消息和助手回复到 session。"""
+        rapid_cfg = self._config.rapid
         if not session.messages:
-            session.add("system", system_prompt())
+            session.add("system", system_prompt(controller=rapid_cfg.controller))
 
         # 把当前用户消息走一次检索 + 装配
         rewritten = rewrite(user_message)
@@ -174,7 +210,12 @@ class Agent:
 
         code, explanation = _extract_code_block(raw)
         if code:
-            final_code, report = _postprocess(code)
+            final_code, report = _postprocess(
+                code,
+                controller=rapid_cfg.controller,
+                io_whitelist=rapid_cfg.io_whitelist,
+                strict_tcp=rapid_cfg.controller == "IRC5P",
+            )
             session.last_code = final_code
         else:
             final_code, report = session.last_code, ValidationReport()
