@@ -687,6 +687,137 @@
   .demo-output-code .cmt { color: #777267; font-style: italic; }
   .demo-output-code .fn { color: #f0d96f; }
 
+  /* ------------- Interactive demo extras ------------- */
+  .demo-input-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .demo-input-head h4 { margin-bottom: 0; }
+  .controller-toggle {
+    display: inline-flex;
+    border: 1px solid var(--blueprint);
+    border-radius: 1px;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+  }
+  .controller-toggle button {
+    background: var(--paper);
+    color: var(--steel);
+    border: none;
+    padding: 5px 12px;
+    cursor: pointer;
+    font: inherit;
+    letter-spacing: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .controller-toggle button + button { border-left: 1px solid var(--blueprint); }
+  .controller-toggle button.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .demo-prompt-input {
+    display: block;
+    width: 100%;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.08rem;
+    line-height: 1.5;
+    color: var(--ink);
+    padding: 14px 16px;
+    background: var(--paper);
+    border: 1px solid var(--blueprint);
+    border-left: 3px solid var(--signal);
+    font-variation-settings: "opsz" 30;
+    resize: vertical;
+    min-height: 76px;
+    margin-bottom: 12px;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.15s;
+  }
+  .demo-prompt-input:focus { border-color: var(--ink); border-left-color: var(--signal); }
+  .demo-prompt-input::placeholder { color: var(--steel-light); font-style: italic; }
+  .demo-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .demo-examples .ex-label {
+    color: var(--steel);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .demo-examples .ex-chip {
+    background: transparent;
+    color: var(--steel);
+    border: 1px solid var(--blueprint);
+    padding: 4px 10px;
+    cursor: pointer;
+    font: inherit;
+    border-radius: 1px;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .demo-examples .ex-chip:hover {
+    color: var(--signal);
+    border-color: var(--signal);
+    background: var(--signal-soft);
+  }
+  .demo-output-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-top: 1px solid rgba(255, 250, 240, 0.06);
+    background: #0f0d0a;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    flex-wrap: wrap;
+  }
+  .demo-output-actions .output-btn {
+    background: transparent;
+    color: var(--phosphor-text);
+    border: 1px solid rgba(232, 227, 216, 0.22);
+    padding: 5px 12px;
+    font: inherit;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .demo-output-actions .output-btn:hover:not(:disabled) {
+    color: var(--signal);
+    border-color: var(--signal);
+  }
+  .demo-output-actions .output-btn:disabled {
+    opacity: 0.32;
+    cursor: not-allowed;
+  }
+  .demo-output-actions .output-note {
+    margin-left: auto;
+    color: var(--steel-light);
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    opacity: 0.85;
+  }
+  @media (max-width: 600px) {
+    .demo-output-actions .output-note {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 4px;
+    }
+  }
+
   /* ------------- Architecture ------------- */
   .arch-wrap {
     margin-top: 40px;
@@ -1244,9 +1375,9 @@
 <!-- ============ DEMO ============ -->
 <section class="section" id="demo">
   <div class="container">
-    <span class="label"><span class="label-num">02</span> Live Pipeline</span>
-    <h2 class="section-title"><span class="nb">把流水线</span> <em><span class="nb">一格一格</span></em><wbr> <span class="nb">走给你看。</span></h2>
-    <p class="lead">点击 <code>RUN</code>，看用户输入如何穿过查询改写、向量检索、本地 LLM、语法校验，最终落地为可导入的 <code>.mod</code> 文件。</p>
+    <span class="label"><span class="label-num">02</span> Live Pipeline · Try it</span>
+    <h2 class="section-title"><span class="nb">改一行需求</span><wbr> <em><span class="nb">看 .mod</span></em><wbr> <span class="nb">即时重生成。</span></h2>
+    <p class="lead">编辑左侧中文需求，或点示例 chip 一键填充；按 <code>RUN</code> 看输入穿过查询改写、向量检索、本地 LLM、语法校验，最终流式落地为可下载的 <code>.mod</code> 文件。</p>
 
     <div class="demo-board">
       <div class="demo-panel">
@@ -1255,8 +1386,22 @@
           <span class="step-id" id="demo-step-label">IDLE</span>
         </div>
         <div class="demo-input">
-          <h4>用户中文需求</h4>
-          <div class="demo-prompt" id="demo-prompt"><span class="nb">用 TriggIO 实现精确同步：</span><wbr><span class="nb">从 p1 到 p2 直线运动中，</span><wbr><span class="nb">距 p1 80mm 时打开喷枪，</span><wbr><span class="nb">距 p1 500mm 时关闭喷枪</span></div>
+          <div class="demo-input-head">
+            <h4>用户中文需求</h4>
+            <div class="controller-toggle" id="ctrl-toggle" role="radiogroup" aria-label="目标控制器">
+              <button type="button" data-ctrl="IRC5" class="active" role="radio" aria-checked="true">IRC5</button>
+              <button type="button" data-ctrl="IRC5P" role="radio" aria-checked="false">IRC5P</button>
+            </div>
+          </div>
+          <textarea class="demo-prompt-input" id="demo-prompt-input" rows="3" spellcheck="false" aria-label="中文需求输入">用 TriggIO 实现精确同步：从 p1 到 p2 直线运动中，距 p1 80mm 时打开喷枪，距 p1 500mm 时关闭喷枪</textarea>
+          <div class="demo-examples">
+            <span class="ex-label">示例</span>
+            <button type="button" class="ex-chip" data-ex="trig">TriggIO 同步</button>
+            <button type="button" class="ex-chip" data-ex="zigzag">Z 字 600×400</button>
+            <button type="button" class="ex-chip" data-ex="linear">直线扫描</button>
+            <button type="button" class="ex-chip" data-ex="arc">圆弧轨迹</button>
+            <button type="button" class="ex-chip" data-ex="brush">改流量 90</button>
+          </div>
 
           <ol class="demo-step-list" id="demo-steps">
             <li data-step="1">
@@ -1311,10 +1456,15 @@
 
       <div class="demo-output">
         <div class="demo-output-head">
-          <span class="file-name">PaintTrigSync.mod</span>
+          <span class="file-name" id="demo-filename">PaintTrigSync_IRC5.mod</span>
           <span id="demo-meta">awaiting…</span>
         </div>
-        <pre class="demo-output-code" id="demo-output"><span class="cmt">// 按右下方 RUN 启动流水线，输出会在这里逐行渲染</span></pre>
+        <pre class="demo-output-code" id="demo-output"><span class="cmt">// 编辑左侧需求 → 按 RUN，完整 .mod 会在这里流式生成</span></pre>
+        <div class="demo-output-actions">
+          <button class="output-btn" id="demo-copy" type="button" disabled>⧉ COPY</button>
+          <button class="output-btn" id="demo-download" type="button" disabled>⬇ DOWNLOAD .mod</button>
+          <span class="output-note">WEB PREVIEW · 规则解析 · 真实工具用本地 LLM + RAG</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1647,63 +1797,220 @@
 
 <script>
   // ============ INTERACTIVE DEMO ============
-  const FULL_MOD = `MODULE PaintTrigSync
-    ! TriggIO 精确同步喷枪开关
-    PERS tooldata  tSprayGun := [TRUE,[[0,0,200],[1,0,0,0]],
-                                 [2.5,[0,0,80],[1,0,0,0],0,0,0]];
-    PERS wobjdata  wobjPart  := [FALSE,TRUE,"",[[0,0,0],[1,0,0,0]],
-                                 [[0,0,0],[1,0,0,0]]];
-    CONST speeddata vPaint   := [200,500,5000,1000];
-    CONST robtarget P1 := [[400,0,300],[0,0,1,0],
-                           [0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
-    CONST robtarget P2 := [[400,600,300],[0,0,1,0],
-                           [0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
-    VAR triggdata trgSprayOn;
-    VAR triggdata trgSprayOff;
+  // Client-side rule parser + template generator. NOT the real LLM —
+  // the real tool runs Qwen2.5-Coder + RAG locally via Ollama (see install section).
 
-    PROC main()
-        ConfL\\Off;
-        SingArea\\Wrist;
-        ! 距 P1 80mm 时 doSprayOn = 1
-        TriggIO trgSprayOn,  80  \\DOp:=doSprayOn, 1;
-        ! 距 P1 500mm 时 doSprayOn = 0
-        TriggIO trgSprayOff, 500 \\DOp:=doSprayOn, 0;
-        MoveJ P1, v1000, fine, tSprayGun\\WObj:=wobjPart;
-        TriggL P2, vPaint, trgSprayOn,  z1,   tSprayGun\\WObj:=wobjPart;
-        TriggL P2, vPaint, trgSprayOff, fine, tSprayGun\\WObj:=wobjPart;
-        SetDO doSprayOn, 0;
-    ENDPROC
-ENDMODULE`;
+  const EXAMPLES = {
+    trig:   '用 TriggIO 实现精确同步：从 p1 到 p2 直线运动中，距 p1 80mm 时打开喷枪，距 p1 500mm 时关闭喷枪',
+    zigzag: '对 600x400 平板做 Z 字扫描喷涂，行距 50mm，速度 v200',
+    linear: '从 p1 到 p2 直线扫描喷涂，行程 800mm，速度 v300',
+    arc:    '在工件表面做圆弧轨迹喷涂，半径 200mm，速度 v150',
+    brush:  '在 500x300mm 平板上 Z 字喷涂，行距 40mm，流量 90，扇面 350，雾化 60',
+  };
 
-  // simple highlighter for the rendered output
+  function parsePrompt(text, controller) {
+    const t = text || '';
+    let scenario;
+    if (/trigg|精确同步|精同步|同步喷|开关枪/i.test(t)) scenario = 'triggio';
+    else if (/圆弧|弧形|弧线|曲线/.test(t) || /\b(movec|paintc)\b/i.test(t)) scenario = 'arc';
+    else if (/z\s*字|蛇形|往返|来回|栅格|zigzag/i.test(t)) scenario = 'zigzag';
+    else if (/直线|线性|\b(movel|paintl)\b/i.test(t)) scenario = 'linear';
+    else if (/\d{2,4}\s*[x×\*乘]\s*\d{2,4}/.test(t)) scenario = 'zigzag';
+    else scenario = 'linear';
+
+    const sizeM = t.match(/(\d{2,4})\s*[x×\*乘]\s*(\d{2,4})/i);
+    const width  = sizeM ? parseInt(sizeM[1], 10) : 600;
+    const height = sizeM ? parseInt(sizeM[2], 10) : 400;
+
+    const pitchM = t.match(/(?:行距|步距|间距|pitch)\s*(?:为|是|=|:)?\s*(\d+)/i);
+    const pitch  = pitchM ? Math.max(5, parseInt(pitchM[1], 10)) : 50;
+
+    const speedM = t.match(/\bv(\d{2,4})\b/i) || t.match(/速度\s*(?:为|是|=|:)?\s*v?(\d+)/i);
+    const speed  = speedM ? parseInt(speedM[1], 10) : 200;
+
+    const lenM = t.match(/(?:行程|长度|距离)\s*(?:为|是|=|:)?\s*(\d+)/);
+    const linearLen = lenM ? parseInt(lenM[1], 10) : 600;
+
+    const radM = t.match(/(?:半径|r)\s*(?:为|是|=|:)?\s*(\d+)/i);
+    const radius = radM ? parseInt(radM[1], 10) : 200;
+
+    const trigOnM  = t.match(/距[^,，。.\n]{0,20}?(\d+)\s*mm[^,，。.\n]{0,12}?(?:打开|开)/i);
+    const trigOffM = t.match(/距[^,，。.\n]{0,20}?(\d+)\s*mm[^,，。.\n]{0,12}?(?:关闭|关)/i);
+
+    const flowM = t.match(/流量\s*(?:为|是|=|:)?\s*(\d+)/);
+    const fanM  = t.match(/扇面\s*(?:为|是|=|:)?\s*(\d+)/);
+    const atomM = t.match(/雾化\s*(?:为|是|=|:)?\s*(\d+)/);
+
+    return {
+      controller, scenario,
+      width, height, pitch,
+      speed, linearLen, radius,
+      trigOn:  trigOnM  ? parseInt(trigOnM[1],  10) : 80,
+      trigOff: trigOffM ? parseInt(trigOffM[1], 10) : 500,
+      flow: flowM ? parseInt(flowM[1], 10) : 80,
+      fan:  fanM  ? parseInt(fanM[1],  10) : 300,
+      atom: atomM ? parseInt(atomM[1], 10) : 50,
+    };
+  }
+
+  function moduleName(p) {
+    const base = { triggio: 'PaintTrigSync', arc: 'PaintArc', zigzag: 'PaintZigzag', linear: 'PaintLinear' }[p.scenario];
+    return `${base}_${p.controller}`;
+  }
+  function describe(p) {
+    const tail = p.controller === 'IRC5P' ? '(IRC5P · PaintL + brushdata)' : '(IRC5 · MoveL + SetDO)';
+    if (p.scenario === 'triggio') return `TriggIO 精确同步喷枪开关 ${tail}`;
+    if (p.scenario === 'arc')     return `圆弧轨迹喷涂 半径 ${p.radius}mm ${tail}`;
+    if (p.scenario === 'zigzag')  return `${p.width}x${p.height} 平板 Z 字扫描 · 行距 ${p.pitch}mm ${tail}`;
+    return `直线扫描喷涂 行程 ${p.linearLen}mm · v${p.speed} ${tail}`;
+  }
+  const ORIENT = '[1.0,0.0,0.0,0.0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]';
+  function tgt(x, y, z) { return `[[${x},${y},${z}],${ORIENT}]`; }
+
+  function genHeader(p) {
+    let h = `MODULE ${moduleName(p)}\n`;
+    h += `    ! ${describe(p)}\n\n`;
+    h += `    PERS tooldata tSprayGun := [TRUE, [[0,0,200],[1,0,0,0]], [2.5,[0,0,80],[1,0,0,0],0,0,0]];\n`;
+    h += `    PERS wobjdata wobjPart := [FALSE, TRUE, "", [[0,0,0],[1,0,0,0]], [[0,0,0],[1,0,0,0]]];\n`;
+    h += `    CONST speeddata vPaint := [${p.speed}, 500, 5000, 1000];\n`;
+    if (p.controller === 'IRC5P') {
+      h += `    ! [WARNING] brushdata 字段顺序随 RobotWare Paint 版本不同 —\n`;
+      h += `    ! 上控制器前必须用 RobotStudio Brush Table 对照校核字段顺序!\n`;
+      h += `    ! 字段: flow, fan, atom, preOpen, postClose, brushOnTime, accept_brush, name, brush_table_idx\n`;
+      h += `    PERS brushdata bdMain := [${p.flow}, ${p.fan}, ${p.atom}, 50, 50, 0, FALSE, "bdMain", 0];\n`;
+    }
+    return h;
+  }
+  function genZigzag(p) {
+    const { controller, width, height, pitch } = p;
+    const z = 300;
+    let b = `\n    PROC main()\n        ConfL\\Off;\n        SingArea\\Wrist;\n\n`;
+    b += `        ! ${width}x${height} 平板 Z 字扫描 · 行距 ${pitch}mm\n`;
+    const rows = Math.min(20, Math.floor(height / pitch) + 1);
+    let dir = 1;
+    for (let i = 0; i < rows; i++) {
+      const y = i * pitch;
+      const sx = dir > 0 ? 0 : width;
+      const ex = dir > 0 ? width : 0;
+      if (i === 0) {
+        b += `        MoveJ ${tgt(sx, y, z)}, v1000, fine, tSprayGun\\WObj:=wobjPart;\n`;
+      } else {
+        b += `        MoveL ${tgt(sx, y, z)}, v500, fine, tSprayGun\\WObj:=wobjPart;\n`;
+      }
+      if (controller === 'IRC5P') {
+        b += `        PaintL ${tgt(ex, y, z)}, vPaint, bdMain, z10, tSprayGun\\WObj:=wobjPart;\n`;
+      } else {
+        b += `        SetDO doSprayOn, 1;\n`;
+        b += `        MoveL ${tgt(ex, y, z)}, vPaint, z10, tSprayGun\\WObj:=wobjPart;\n`;
+        b += `        SetDO doSprayOn, 0;\n`;
+      }
+      dir = -dir;
+    }
+    if (rows >= 20 && Math.floor(height / pitch) + 1 > 20) {
+      b += `        ! ... (${Math.floor(height / pitch) + 1 - 20} 行省略 · 完整版由 CLI 生成)\n`;
+    }
+    b += `    ENDPROC\n`;
+    return b;
+  }
+  function genLinear(p) {
+    const z = 300;
+    let b = `\n    PROC main()\n        ConfL\\Off;\n        SingArea\\Wrist;\n\n`;
+    b += `        ! 直线扫描 · ${p.linearLen}mm\n`;
+    b += `        MoveJ ${tgt(0, 0, z)}, v1000, fine, tSprayGun\\WObj:=wobjPart;\n`;
+    if (p.controller === 'IRC5P') {
+      b += `        PaintL ${tgt(p.linearLen, 0, z)}, vPaint, bdMain, z10, tSprayGun\\WObj:=wobjPart;\n`;
+    } else {
+      b += `        SetDO doSprayOn, 1;\n`;
+      b += `        MoveL ${tgt(p.linearLen, 0, z)}, vPaint, z10, tSprayGun\\WObj:=wobjPart;\n`;
+      b += `        SetDO doSprayOn, 0;\n`;
+    }
+    b += `    ENDPROC\n`;
+    return b;
+  }
+  function genArc(p) {
+    const z = 300;
+    const r = p.radius;
+    let b = `\n    PROC main()\n        ConfL\\Off;\n        SingArea\\Wrist;\n\n`;
+    b += `        ! 圆弧轨迹 · 半径 ${r}mm\n`;
+    b += `        MoveJ ${tgt(0, 0, z)}, v1000, fine, tSprayGun\\WObj:=wobjPart;\n`;
+    if (p.controller === 'IRC5P') {
+      b += `        PaintC ${tgt(r, r, z)}, ${tgt(2 * r, 0, z)}, vPaint, bdMain, z10, tSprayGun\\WObj:=wobjPart;\n`;
+    } else {
+      b += `        SetDO doSprayOn, 1;\n`;
+      b += `        MoveC ${tgt(r, r, z)}, ${tgt(2 * r, 0, z)}, vPaint, z10, tSprayGun\\WObj:=wobjPart;\n`;
+      b += `        SetDO doSprayOn, 0;\n`;
+    }
+    b += `    ENDPROC\n`;
+    return b;
+  }
+  function genTrig(p) {
+    if (p.controller === 'IRC5P') {
+      let b = `\n    PROC main()\n`;
+      b += `        ! IRC5P 模式: brushdata 内置 preOpen/postClose 时序, 无需 TriggIO\n`;
+      b += `        ConfL\\Off;\n        SingArea\\Wrist;\n`;
+      b += `        MoveJ ${tgt(400, 0, 300)}, v1000, fine, tSprayGun\\WObj:=wobjPart;\n`;
+      b += `        PaintL ${tgt(400, 600, 300)}, vPaint, bdMain, z10, tSprayGun\\WObj:=wobjPart;\n`;
+      b += `    ENDPROC\n`;
+      return b;
+    }
+    let b = `    CONST robtarget P1 := [[400,0,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];\n`;
+    b += `    CONST robtarget P2 := [[400,600,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];\n`;
+    b += `    VAR triggdata trgSprayOn;\n    VAR triggdata trgSprayOff;\n\n`;
+    b += `    PROC main()\n        ConfL\\Off;\n        SingArea\\Wrist;\n`;
+    b += `        ! 距 P1 ${p.trigOn}mm 时 doSprayOn = 1\n`;
+    b += `        TriggIO trgSprayOn,  ${p.trigOn} \\DOp:=doSprayOn, 1;\n`;
+    b += `        ! 距 P1 ${p.trigOff}mm 时 doSprayOn = 0\n`;
+    b += `        TriggIO trgSprayOff, ${p.trigOff} \\DOp:=doSprayOn, 0;\n`;
+    b += `        MoveJ P1, v1000, fine, tSprayGun\\WObj:=wobjPart;\n`;
+    b += `        TriggL P2, vPaint, trgSprayOn,  z1,   tSprayGun\\WObj:=wobjPart;\n`;
+    b += `        TriggL P2, vPaint, trgSprayOff, fine, tSprayGun\\WObj:=wobjPart;\n`;
+    b += `        SetDO doSprayOn, 0;\n    ENDPROC\n`;
+    return b;
+  }
+  function generateMod(p) {
+    const body = ({ triggio: genTrig, arc: genArc, zigzag: genZigzag, linear: genLinear })[p.scenario](p);
+    return `${genHeader(p)}${body}ENDMODULE\n`;
+  }
+
   function highlight(text) {
-    // escape first
-    const escaped = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return escaped
       .replace(/(^|\n)([ \t]*!)([^\n]*)/g, '$1<span class="cmt">$2$3</span>')
-      .replace(/\b(MODULE|ENDMODULE|PROC|ENDPROC|FUNC|ENDFUNC|VAR|PERS|CONST|IF|THEN|ELSE|ENDIF|FOR|FROM|TO|DO|ENDFOR|WHILE|ENDWHILE|MoveJ|MoveL|MoveC|SetDO|Reset|TriggL|TriggC|TriggIO|ConfL|ConfJ|SingArea|WaitTime|TPWrite|RETURN)\b/g,
+      .replace(/\b(MODULE|ENDMODULE|PROC|ENDPROC|FUNC|ENDFUNC|VAR|PERS|CONST|IF|THEN|ELSE|ENDIF|FOR|FROM|TO|DO|ENDFOR|WHILE|ENDWHILE|MoveJ|MoveL|MoveC|PaintL|PaintC|SetDO|Reset|TriggL|TriggC|TriggIO|ConfL|ConfJ|SingArea|WaitTime|TPWrite|RETURN)\b/g,
         '<span class="kw">$1</span>')
-      .replace(/\b(tooldata|wobjdata|speeddata|zonedata|robtarget|jointtarget|triggdata|signaldo|signaldi|num|bool|string|pos|orient)\b/g,
+      .replace(/\b(tooldata|wobjdata|speeddata|zonedata|robtarget|jointtarget|triggdata|brushdata|signaldo|signaldi|num|bool|string|pos|orient)\b/g,
         '<span class="ty">$1</span>')
       .replace(/(&quot;[^&]*?&quot;|"[^"]*")/g, '<span class="str">$1</span>')
       .replace(/\b(\d+(?:\.\d+)?(?:E\d+)?)\b/g, '<span class="num">$1</span>')
       .replace(/\b(main)\b/g, '<span class="fn">$1</span>');
   }
 
-  const runBtn = document.getElementById('demo-run');
-  const resetBtn = document.getElementById('demo-reset');
-  const stepLabel = document.getElementById('demo-step-label');
-  const outputEl = document.getElementById('demo-output');
-  const metaEl = document.getElementById('demo-meta');
-  const stepItems = Array.from(document.querySelectorAll('#demo-steps li'));
+  const runBtn       = document.getElementById('demo-run');
+  const resetBtn     = document.getElementById('demo-reset');
+  const stepLabel    = document.getElementById('demo-step-label');
+  const outputEl     = document.getElementById('demo-output');
+  const metaEl       = document.getElementById('demo-meta');
+  const filenameEl   = document.getElementById('demo-filename');
+  const promptInput  = document.getElementById('demo-prompt-input');
+  const copyBtn      = document.getElementById('demo-copy');
+  const downloadBtn  = document.getElementById('demo-download');
+  const ctrlToggle   = document.getElementById('ctrl-toggle');
+  const stepItems    = Array.from(document.querySelectorAll('#demo-steps li'));
+  const exChips      = Array.from(document.querySelectorAll('.ex-chip'));
 
+  let activeController = 'IRC5';
+  let currentMod = '';
+  let currentFilename = 'PaintTrigSync_IRC5.mod';
   let timers = [];
+
   function clearAll() {
     timers.forEach(t => clearTimeout(t));
     timers = [];
+  }
+
+  function setControlsAfterRun(enabled) {
+    copyBtn.disabled = !enabled;
+    downloadBtn.disabled = !enabled;
   }
 
   function reset() {
@@ -1711,48 +2018,116 @@ ENDMODULE`;
     stepItems.forEach(s => s.classList.remove('done'));
     stepLabel.textContent = 'IDLE';
     metaEl.textContent = 'awaiting…';
-    outputEl.innerHTML = '<span class="cmt">// 按右下方 RUN 启动流水线，输出会在这里逐行渲染</span>';
+    outputEl.innerHTML = '<span class="cmt">// 编辑左侧需求 → 按 RUN，完整 .mod 会在这里流式生成</span>';
+    setControlsAfterRun(false);
   }
 
   function runPipeline() {
+    const promptText = (promptInput.value || '').trim();
+    if (!promptText) {
+      promptInput.focus();
+      return;
+    }
     clearAll();
     stepItems.forEach(s => s.classList.remove('done'));
+    setControlsAfterRun(false);
     outputEl.innerHTML = '<span class="cmt">// pipeline starting…</span>';
     metaEl.textContent = 'RUNNING';
 
-    const stepDelays = [350, 700, 1100, 1500, 2400, 3300];
-    const stepNames = ['REWRITE', 'RETRIEVE', 'CONTEXT', 'LLM-GEN', 'POST-PROC', 'WRITE'];
+    const params = parsePrompt(promptText, activeController);
+    currentMod = generateMod(params);
+    currentFilename = moduleName(params) + '.mod';
+    filenameEl.textContent = currentFilename;
 
+    const stepDelays = [350, 700, 1100, 1500, 2400, 3300];
+    const stepNames  = ['REWRITE', 'RETRIEVE', 'CONTEXT', 'LLM-GEN', 'POST-PROC', 'WRITE'];
     stepDelays.forEach((delay, i) => {
       timers.push(setTimeout(() => {
         stepItems[i].classList.add('done');
-        stepLabel.textContent = `STEP ${String(i+1).padStart(2,'0')} · ${stepNames[i]}`;
+        stepLabel.textContent = `STEP ${String(i + 1).padStart(2, '0')} · ${stepNames[i]}`;
       }, delay));
     });
 
-    // streaming output during LLM step
     timers.push(setTimeout(() => {
-      const lines = FULL_MOD.split('\n');
+      const lines = currentMod.split('\n');
       let acc = '';
       outputEl.innerHTML = '';
       lines.forEach((ln, idx) => {
         timers.push(setTimeout(() => {
-          acc += ln + (idx < lines.length-1 ? '\n' : '');
-          outputEl.innerHTML = highlight(acc) + (idx < lines.length-1 ? '<span style="color:#d94a1f">▌</span>' : '');
+          acc += ln + (idx < lines.length - 1 ? '\n' : '');
+          outputEl.innerHTML = highlight(acc) + (idx < lines.length - 1 ? '<span style="color:#d94a1f">▌</span>' : '');
           outputEl.scrollTop = outputEl.scrollHeight;
-        }, idx * 70));
+        }, idx * 55));
       });
     }, 1800));
 
-    // final state
+    const totalMs = 1800 + currentMod.split('\n').length * 55 + 200;
     timers.push(setTimeout(() => {
       stepLabel.textContent = 'DONE · ✓ VALID';
-      metaEl.textContent = '0 errors · 2 warnings · 2.1 KB';
-    }, 1800 + FULL_MOD.split('\n').length * 70 + 200));
+      const bytes = new TextEncoder().encode(currentMod).length;
+      const warnings = activeController === 'IRC5P' ? 2 : 1;
+      metaEl.textContent = `0 errors · ${warnings} warnings · ${(bytes / 1024).toFixed(1)} KB`;
+      setControlsAfterRun(true);
+    }, totalMs));
+  }
+
+  function downloadMod() {
+    if (!currentMod) return;
+    const blob = new Blob([currentMod], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const orig = downloadBtn.textContent;
+    downloadBtn.textContent = '⬇ SAVED ✓';
+    setTimeout(() => downloadBtn.textContent = orig, 1400);
+  }
+
+  function copyMod() {
+    if (!currentMod) return;
+    navigator.clipboard.writeText(currentMod).then(() => {
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = '⧉ COPIED ✓';
+      setTimeout(() => copyBtn.textContent = orig, 1400);
+    });
   }
 
   runBtn.addEventListener('click', runPipeline);
   resetBtn.addEventListener('click', reset);
+  copyBtn.addEventListener('click', copyMod);
+  downloadBtn.addEventListener('click', downloadMod);
+
+  ctrlToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-ctrl]');
+    if (!btn) return;
+    activeController = btn.dataset.ctrl;
+    ctrlToggle.querySelectorAll('button').forEach(b => {
+      const on = b === btn;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  });
+
+  exChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const key = chip.dataset.ex;
+      if (EXAMPLES[key]) {
+        promptInput.value = EXAMPLES[key];
+        promptInput.focus();
+      }
+    });
+  });
+
+  promptInput.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      runPipeline();
+    }
+  });
 
   // ============ CITATION COPY ============
   const citeBtn = document.getElementById('cite-copy');
