@@ -99,6 +99,11 @@
 \lstdefinestyle{py}{style=base,language=Python}
 \lstdefinestyle{sh}{style=base,language=bash,
   morekeywords={abb-agent,ollama}}
+\definecolor{consolebg}{RGB}{20,24,28}
+\definecolor{consolefg}{RGB}{222,226,230}
+\lstdefinestyle{console}{style=base,backgroundcolor=\color{consolebg},
+  basicstyle=\ttfamily\scriptsize\color{consolefg},keywordstyle={},
+  commentstyle={},stringstyle={},rulecolor=\color{abbdark}}
 
 % ---------- 提示框 ----------
 \newcommand{\keypoint}[1]{%
@@ -488,6 +493,13 @@ def rewrite(query: str) -> RewrittenQuery:
     return RewrittenQuery(query, rewritten, category, tuple(sorted(keywords)))
 \end{lstlisting}
 
+\noindent\textbf{实跑实录}（对真实中文需求调用 \texttt{rewrite()}，终端输出）：
+\begin{lstlisting}[style=console]
+>>> rewrite("对600x400矩形面做 Z 字扫描喷涂，行距50mm，TriggIO 精确同步喷枪")
+识别任务类别: zigzag_scan
+抽取关键词: TriggData TriggIO TriggL back coating distance forth gun ...
+\end{lstlisting}
+
 \subsection{向量 + BM25 混合检索}
 为兼顾\textbf{精确关键词}（“如何写 MoveL”——BM25 强）与\textbf{模糊意图}
 （“沿直线扫过去”——向量强），检索层采用混合策略：两路分别取 Top-$k$，
@@ -590,6 +602,20 @@ def _check_io_whitelist(lines, whitelist):
         issues.append(ValidationIssue(ln, ERROR, "IO001",
             f"IO 信号 '{sig}' 不在 EIO.cfg 白名单中"))
     return issues
+\end{lstlisting}
+
+\noindent\textbf{实跑实录}：对仓库内真实样例校验通过；对一段\textbf{故意写错}的代码
+（\texttt{PaintL} 漏 \texttt{brushdata} 形参、引用未注册信号），校验器精确报错并给出错误码——
+这正是把“现场才会暴露的高代价错误（如上机报 \texttt{40212} 信号未定义）”左移到\textbf{生成时拦截}的实证：
+\begin{lstlisting}[style=console]
+>>> validate(open("examples/door_zigzag_irc5p/DoorPaint_IRC5P.mod").read(),
+...          controller="IRC5P", io_whitelist=("doSprayOn","doFanOn","doAtomOn"))
+RAPID 语法校验通过      is_valid: True
+
+>>> validate(bad_code, controller="IRC5P", io_whitelist=("doSprayOn",), strict_tcp=True)
+[ERROR][PNT001] L4: PaintL 参数数量 4 不足 (5)，很可能缺少 brushdata 形参
+[ERROR][IO001]  L5: IO 信号 'doUnknownSig' 不在 EIO.cfg 白名单中。已知信号: doSprayOn
+-- 共 2 错误, 0 警告
 \end{lstlisting}
 
 \subsection{双控制器模式：IRC5 与 IRC5P 自适应}
