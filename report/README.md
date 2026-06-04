@@ -5,12 +5,15 @@
 - **队伍名称**：人工智能创新001
 - **比赛赛项**：人工智能创新赛
 
-本目录含两份材料：
+本目录含五份参赛材料：
 
-| 文件 | 内容 | 页数 |
+| 文件 | 内容 | 规格 |
 |------|------|------|
-| [`main.tex`](main.tex) / [`main.pdf`](main.pdf) | **项目研究报告**（背景 · 架构 · 关键技术 · 创新点 · 实测） | 17 |
-| [`evidence.tex`](evidence.tex) / [`evidence.pdf`](evidence.pdf) | **项目佐证材料**（Git 历史 · 单元测试实跑 · 覆盖率 · 核心能力实证 · 真实产物 · 演示页截图） | 7 |
+| [`main.tex`](main.tex) / [`main.pdf`](main.pdf) | **项目研究报告**（背景 · 架构 · 关键技术 · 创新点 · 实测 · 实拍配图 · 终端实录） | A4 · 20 页 |
+| [`evidence.tex`](evidence.tex) / [`evidence.pdf`](evidence.pdf) | **项目佐证材料**（Git 历史 · 单元测试实跑 · 覆盖率 · 核心能力实证 · 真实产物 · 公开发布物料） | A4 · 8 页 |
+| [`poster.tex`](poster.tex) / [`poster.pdf`](poster.pdf) | **项目一图流海报**（答辩展板 / 路演，一眼看全） | A4 横版 · 1 页 |
+| [`slides.tex`](slides.tex) / [`slides.pdf`](slides.pdf) | **答辩幻灯**（Beamer 16:9，10 页内） | 16:9 · 10 页 |
+| [`combined.tex`](combined.tex) / [`combined.pdf`](combined.pdf) | **合订本**（研究报告 + 佐证材料附录，单文件提交用） | A4 · 29 页 |
 
 > 佐证材料中的单元测试与覆盖率均为**可复现实测**（156 个用例全部通过，无需 GPU/Ollama）；
 > 知识库/端到端等数据标注为「项目记录」，来源于 `PROJECT_STATUS.md` / `EXECUTION_LOG.md`。
@@ -21,15 +24,20 @@
 为生成目录与交叉引用，请各运行两次：
 
 ```bash
-xelatex main.tex     && xelatex main.tex       # 研究报告
+xelatex main.tex     && xelatex main.tex       # 研究报告（两次：目录/交叉引用）
 xelatex evidence.tex && xelatex evidence.tex   # 佐证材料（需能读到 ../docs/screenshots/*.png）
+xelatex poster.tex                             # 海报（一次即可）
+xelatex slides.tex   && xelatex slides.tex     # 答辩幻灯（Beamer）
+# 合订本：须先生成 main.pdf 与 evidence.pdf，再编译两次（封面分隔页用 overlay 需二次定位）
+xelatex combined.tex && xelatex combined.tex
 ```
 
 或使用 `latexmk`：
 
 ```bash
-latexmk -xelatex main.tex
-latexmk -xelatex evidence.tex
+latexmk -xelatex main.tex && latexmk -xelatex evidence.tex
+latexmk -xelatex poster.tex && latexmk -xelatex slides.tex
+latexmk -xelatex combined.tex
 ```
 
 ### 依赖

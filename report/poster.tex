@@ -1,0 +1,147 @@
+% =====================================================================
+%  项目一图流海报 —— abb-offline-coder  (A4 横版，答辩展板/路演用)
+%  比赛赛项：人工智能创新赛   队伍：人工智能创新001
+%  编译：xelatex poster.tex
+% =====================================================================
+\documentclass[12pt]{ctexart}
+\usepackage[paperwidth=297mm,paperheight=210mm,margin=9mm]{geometry}
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,fit,backgrounds}
+\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{pifont}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\definecolor{abbred}{RGB}{217,74,31}
+\definecolor{abbdark}{RGB}{24,24,24}
+\definecolor{abbgray}{RGB}{95,95,95}
+\definecolor{abblight}{RGB}{246,242,240}
+\definecolor{boxblue}{RGB}{226,236,246}
+\definecolor{okgreen}{RGB}{34,140,64}
+\definecolor{linegray}{RGB}{205,205,205}
+
+\newcommand{\hd}[1]{{\sffamily\bfseries\color{abbred}#1}}
+
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm,
+  panel/.style={draw=abbred,line width=0.9pt,rounded corners=4pt,fill=white,
+    inner sep=7pt,align=left,font=\footnotesize},
+  pstep/.style={draw=abbdark,line width=0.7pt,rounded corners=3pt,fill=white,
+    align=center,font=\scriptsize\sffamily,minimum height=1.05cm,inner sep=2pt},
+  pio/.style={draw=abbred,line width=1pt,fill=abblight,rounded corners=3pt,
+    align=center,font=\scriptsize\sffamily\bfseries,minimum height=1.05cm,inner sep=2pt},
+  lyr/.style={draw=abbdark,line width=0.6pt,rounded corners=2pt,fill=abblight,
+    align=center,font=\scriptsize\sffamily,minimum height=0.62cm,inner sep=2pt},
+  arr/.style={-{Latex[length=2mm]},line width=0.8pt,abbred},
+]
+\useasboundingbox (0,0) rectangle (27.9,19.2);
+
+% ---------------- 顶部标题带 ----------------
+\fill[abbred] (0,17.2) rectangle (27.9,19.2);
+\fill[abbdark] (0,17.0) rectangle (27.9,17.2);
+\node[anchor=west,font=\sffamily\bfseries,text=white] at (0.5,18.5)
+  {\fontsize{30}{32}\selectfont abb-offline-coder};
+\node[anchor=west,font=\sffamily,text=white] at (0.6,17.65)
+  {\large 面向 ABB 喷涂机器人的离线 AI 编程助手\, ·\, “把中文一句话变成 RAPID 喷涂程序”};
+\node[anchor=east,font=\sffamily\bfseries,text=white,align=right] at (27.5,18.45)
+  {人工智能创新赛};
+\node[anchor=east,font=\sffamily,text=white,align=right] at (27.5,17.7)
+  {队伍：人工智能创新001\quad|\quad MIT 开源};
+
+% ---------------- 流水线带（核心）----------------
+\node[anchor=north west,font=\sffamily\bfseries\color{abbred}] at (0.1,16.85)
+  {核心流水线：中文需求 → 可导入 RobotStudio 的 .mod 程序（全离线 / CPU）};
+\def\py{15.0}        % 流水线行 y 中心
+\node[pio,text width=2.7cm]   at (1.9,\py)  (q)  {中文需求\\\tiny 自然语言};
+\node[pstep,text width=2.7cm] at (5.5,\py)  (rw) {\ding{172}~查询改写\\\tiny 中→英术语+分类};
+\node[pstep,text width=2.7cm] at (9.1,\py)  (re) {\ding{173}~混合检索\\\tiny 向量+BM25};
+\node[pstep,text width=2.7cm] at (12.7,\py) (cb) {\ding{174}~上下文装配\\\tiny 手册片段注入};
+\node[pstep,text width=2.7cm] at (16.3,\py) (lm) {\ding{175}~本地 LLM\\\tiny Qwen2.5-Coder};
+\node[pstep,text width=2.7cm] at (19.9,\py) (pp) {\ding{176}~校验后处理\\\tiny 11类规则+错误码};
+\node[pio,text width=2.7cm]   at (23.5,\py) (o)  {\ding{177}~.mod 输出\\\tiny +Pack\&Go 交付};
+\foreach \a/\b in {q/rw,rw/re,re/cb,cb/lm,lm/pp,pp/o} \draw[arr] (\a) -- (\b);
+\node[anchor=west,font=\scriptsize\color{abbgray}] at (25.0,\py) {端到端\\20–35s};
+\draw[linegray,line width=0.5pt] (0,13.85) -- (27.9,13.85);
+
+% ================= 三栏 =================
+\def\cyA{13.35}  % 各栏顶部 y
+% ---------- 左栏 ----------
+\node[panel,text width=8.0cm,anchor=north west] at (0.1,\cyA) (p1){%
+  \hd{行业痛点：三高一隔离}\\[2pt]
+  $\bullet$ RAPID 专有语言，喷涂还叠加笔刷/时序/标定/IO 配置——\textbf{门槛高、试错贵、依赖专家}\\
+  $\bullet$ 喷涂车间多为\textbf{物理隔离、完全无网}——云端 AI 编程工具（Copilot/ChatGPT）\textbf{无法落地}，现场数据\textbf{不能外传}};
+\node[panel,text width=8.0cm,anchor=north west,fill=abblight] at (0.1,\cyA-2.55) (p2){%
+  \hd{解决方案与定位}\\[2pt]
+  本地量化大模型 + 官方手册 RAG，在工业 PC（CPU、无 GPU）上把\textbf{一句中文}变成
+  符合 ABB 规范、可导入 RobotStudio 的 \textbf{.mod} 程序；\textbf{数据全程不出厂}。};
+\node[panel,text width=8.0cm,anchor=north west] at (0.1,\cyA-5.0) (p3){%
+  \hd{七大创新点}\\[2pt]
+  \textbf{1.} 完全离线工业代码生成\quad\textbf{2.} 官方手册 RAG 抑幻觉\\
+  \textbf{3.} IRC5/IRC5P 双控制器自适应\quad\textbf{4.} 生成—校验闭环\\
+  \textbf{5.} Pack\&Go 一键交付\quad\textbf{6.} 一键离线迁移\quad\textbf{7.} 安全护栏内建};
+
+% ---------- 中栏 ----------
+\node[anchor=north,font=\footnotesize\sffamily\bfseries\color{abbred}] at (13.6,\cyA-0.2) (aTitle){系统四层架构};
+% 架构小图
+\begin{scope}
+\node[lyr,text width=7.2cm] at (13.6,\cyA-0.95) (aCli){CLI 层\,·\, gen/chat/kb/init/doctor};
+\node[lyr,text width=7.2cm,fill=boxblue] at (13.6,\cyA-1.72) (aOrc){编排层 Agent\,·\,流水线+多轮对话};
+\node[lyr,text width=2.25cm,minimum height=0.95cm,draw=abbred] at (11.45,\cyA-2.85) (aR){rag/\\\tiny 检索};
+\node[lyr,text width=2.25cm,minimum height=0.95cm,draw=abbred] at (13.6,\cyA-2.85) (aL){llm/\\\tiny 推理};
+\node[lyr,text width=2.25cm,minimum height=0.95cm,draw=abbred] at (15.75,\cyA-2.85) (aP){rapid/\\\tiny 校验};
+\node[lyr,text width=7.2cm,fill=abblight] at (13.6,\cyA-3.75) (aKb){knowledge/\,·\,PDF/MOD/HTML→切片→ChromaDB};
+\draw[arr] (aCli)--(aOrc);
+\draw[arr] (aOrc) -- (aL); \draw[arr](aOrc)--(aR); \draw[arr](aOrc)--(aP);
+\draw[arr] (aR) -- (aKb);
+\end{scope}
+\begin{scope}[on background layer]
+\node[panel,fit=(aTitle)(aCli)(aOrc)(aR)(aL)(aP)(aKb),inner sep=8pt]{};
+\end{scope}
+\node[panel,text width=8.0cm,anchor=north west] at (9.6,\cyA-4.65) (m2){%
+  \hd{IRC5\, vs\, IRC5P（同一句话，两种工艺）}\\[3pt]
+  \textbf{IRC5}（通用）：\texttt{MoveL + SetDO doSprayOn} 手动开关枪\\
+  \textbf{IRC5P}（Paint）：\texttt{PaintL/PaintC + brushdata} 原生工艺自动管时序\\
+  控制器作为贯穿提示词/生成/校验/交付的\textbf{一等参数}，一键切换。};
+\node[panel,text width=8.0cm,anchor=north west,fill=abblight] at (9.6,\cyA-7.55) (m3){%
+  \hd{Pack\&Go 一键交付}\\[2pt]
+  \texttt{.mod + BASE.sys + T\_ROB1.pgf + README} → 可直接拖入 RobotStudio
+  加载的完整目录；自动处理控制器 ISO-8859-1/CRLF 编码细节。};
+
+% ---------- 右栏 ----------
+\node[panel,text width=8.05cm,anchor=north west] at (19.05,\cyA) (r1){%
+  \hd{核心规格（实测 / 记录）}\\[3pt]
+  \begin{tabular}{@{}ll@{}}
+  单元测试 & \textbf{156} 通过 / 0.94s（实测）\\
+  核心覆盖率 & 92\%–\textbf{100}\%（实测）\\
+  代码规模 & $\approx$4506 行 / 37 文件\\
+  知识库 & \textbf{7497} 片段 / 10 本手册\\
+  嵌入模型 & bge-small-zh, 512维, 92MB\\
+  本地 LLM & Qwen2.5-Coder-7B Q4 (4.5GB)\\
+  端到端 & 20–35s（i5/16G，无 GPU）\\
+  离线包 & $\approx$192MB（单文件迁移）\\
+  \end{tabular}};
+\node[panel,text width=8.05cm,anchor=north west] at (19.05,\cyA-5.35) (r2){%
+  \hd{生成—校验闭环（实跑实录）}\\[2pt]
+  对缺陷代码精确拦截，错误码可追溯：\\
+  {\ttfamily\scriptsize\color{abbdark}[ERROR][PNT001] 缺 brushdata 形参\\
+  $[$ERROR$][$IO001$]$ 信号不在 EIO.cfg 白名单}\\
+  把现场才暴露的 40212 错误\textbf{左移到生成时}。};
+\node[panel,text width=8.05cm,anchor=north west,fill=boxblue] at (19.05,\cyA-8.15) (r3){%
+  \hd{开源 \& 在线演示}\\[2pt]
+  \footnotesize 源码\,github.com/Hollis36/abb-offline-coder\\
+  演示\,hollis36.github.io/abb-offline-coder\\
+  \scriptsize Python 87\%\, ·\, MIT\, ·\, rag/ollama/qwen/chromadb/abb-robotics};
+
+% ---------------- 底部带 ----------------
+\fill[abblight] (0,0) rectangle (27.9,1.05);
+\draw[abbred,line width=1.2pt] (0,1.05) -- (27.9,1.05);
+\node[anchor=west,font=\scriptsize\sffamily\color{abbgray}] at (0.3,0.52)
+  {人工智能创新赛 · 项目一图流 \quad|\quad 队伍：人工智能创新001 \quad|\quad abb-offline-coder v0.2};
+\node[anchor=east,font=\scriptsize\sffamily\color{abbdark}] at (27.6,0.52)
+  {完全离线 · 中文需求 → ABB RAPID · 本地 LLM + 官方手册 RAG · 工业 PC 断网可用};
+\end{tikzpicture}
+\end{document}

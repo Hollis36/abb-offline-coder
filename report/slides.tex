@@ -1,0 +1,321 @@
+% =====================================================================
+%  答辩幻灯 —— abb-offline-coder   (Beamer 16:9, ≤10 内容页)
+%  比赛赛项：人工智能创新赛   队伍：人工智能创新001
+%  编译：xelatex slides.tex （两次）
+% =====================================================================
+\documentclass[aspectratio=169,fontset=none,11pt]{ctexbeamer}
+
+\setCJKmainfont{Noto Sans CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,fit}
+\usepackage{listings}
+\usepackage{pifont}
+\usepackage{booktabs}
+
+\graphicspath{{../docs/screenshots/}}
+
+% ---------------- 配色与主题 ----------------
+\definecolor{abbred}{RGB}{217,74,31}
+\definecolor{abbdark}{RGB}{28,28,28}
+\definecolor{abbgray}{RGB}{110,110,110}
+\definecolor{abblight}{RGB}{246,242,240}
+\definecolor{boxblue}{RGB}{226,236,246}
+\definecolor{consolebg}{RGB}{20,24,28}
+\definecolor{consolefg}{RGB}{224,228,232}
+\definecolor{okgreen}{RGB}{34,140,64}
+
+\usetheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{structure}{fg=abbred}
+\setbeamercolor{frametitle}{fg=abbdark}
+\setbeamercolor{title}{fg=abbdark}
+\setbeamercolor{itemize item}{fg=abbred}
+\setbeamercolor{itemize subitem}{fg=abbgray}
+\setbeamerfont{frametitle}{series=\bfseries,size=\Large}
+\setbeamertemplate{itemize item}{\small\ding{228}}
+\setbeamertemplate{itemize subitem}{\textemdash}
+
+% 自定义页眉条 + 页脚
+\setbeamertemplate{frametitle}{%
+  \vspace{6pt}\hspace{4pt}{\usebeamerfont{frametitle}\insertframetitle}\\[-2pt]
+  \hspace{4pt}{\color{abbred}\rule{0.32\paperwidth}{1.4pt}}\par\vspace{-2pt}}
+\setbeamertemplate{footline}{%
+  \hbox{\begin{beamercolorbox}[wd=\paperwidth,ht=2.4ex,dp=1.2ex,leftskip=10pt,rightskip=10pt]{}%
+  {\color{abbgray}\scriptsize 人工智能创新赛 · abb-offline-coder \hfill
+   队伍：人工智能创新001 \hfill \insertframenumber/\inserttotalframenumber}%
+  \end{beamercolorbox}}}
+
+% ---------------- 代码样式 ----------------
+\lstdefinestyle{rapidmini}{
+  backgroundcolor=\color{abblight},basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{abbred}\bfseries,commentstyle=\color{abbgray}\itshape,
+  morekeywords={MODULE,ENDMODULE,PROC,ENDPROC,PERS,CONST,MoveL,PaintL,SetDO,ConfL,SingArea},
+  comment=[l]{!},breaklines=true,columns=fullflexible,frame=none,xleftmargin=4pt}
+\lstdefinestyle{con}{backgroundcolor=\color{consolebg},
+  basicstyle=\ttfamily\scriptsize\color{consolefg},breaklines=true,
+  columns=fullflexible,frame=none,xleftmargin=4pt}
+
+\newcommand{\redb}[1]{{\color{abbred}\bfseries #1}}
+
+% TikZ 公共样式
+\tikzset{
+  blk/.style={draw=abbdark,line width=0.6pt,rounded corners=2pt,fill=white,
+    align=center,font=\scriptsize,minimum height=0.8cm,inner sep=2pt},
+  hot/.style={draw=abbred,line width=0.9pt,fill=abblight,rounded corners=2pt,
+    align=center,font=\scriptsize\bfseries,minimum height=0.8cm,inner sep=2pt},
+  fl/.style={-{Latex[length=1.6mm]},line width=0.7pt,abbred},
+}
+
+% ---------------- 标题信息 ----------------
+\title{\bfseries abb-offline-coder}
+\subtitle{面向 ABB 喷涂机器人的离线 AI 编程助手}
+\author{队伍：\textbf{人工智能创新001}}
+\institute{人工智能创新赛 · 项目答辩}
+\date{2026 年 6 月}
+
+\begin{document}
+
+% ============ 封面 ============
+{\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[abbred] ([yshift=-1.0cm]current page.north west) rectangle (current page.north east);
+    \fill[abblight] (current page.south west) rectangle ([yshift=1.3cm]current page.south east);
+  \end{tikzpicture}
+  \vfill
+  \begin{center}
+  {\color{abbgray}\sffamily 人工智能创新赛 · 项目答辩}\\[10pt]
+  {\fontsize{34}{38}\selectfont\bfseries abb-offline-coder}\\[4pt]
+  {\color{abbred}\rule{4cm}{2pt}}\\[8pt]
+  {\Large 面向 ABB 喷涂机器人的离线 AI 编程助手}\\[6pt]
+  {\color{abbgray} “把中文一句话变成 ABB RAPID 喷涂程序”}\\[16pt]
+  {\large 队伍：\textbf{人工智能创新001}}\\[2pt]
+  {\color{abbgray}\small 完全离线 · 本地 LLM + 官方手册 RAG · 工业 PC 断网可用}
+  \end{center}
+  \vfill
+\end{frame}}
+
+% ============ 1. 痛点 ============
+\begin{frame}{为什么需要它：喷涂编程的“三高一隔离”}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\begin{itemize}
+  \item \redb{门槛高}：RAPID 专有语言，喷涂还叠加笔刷工艺、喷枪时序、TCP 标定、IO 配置
+  \item \redb{试错贵}：一个信号没注册，上机即报 \texttt{40212}；TCP 没标定可能撞机
+  \item \redb{依赖人}：培养一名能独立编程的工程师以\textbf{月}计
+  \item \redb{现场隔离}：喷涂车间多为\textbf{物理隔离、完全无网}
+\end{itemize}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{block}{\small 结论}
+\small Copilot / ChatGPT / Cursor 等\textbf{云端 AI 编程工具在喷涂现场根本无法落地}，
+现场数据也\textbf{不允许外传}。\\[4pt]
+$\Rightarrow$ 需要一个\textbf{完全离线、领域专精}的中文 AI 编程助手。
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 2. 方案与定位 ============
+\begin{frame}{我们的方案：完全离线的中文 AI 编程助手}
+\begin{center}
+\itshape\large “把中文一句话变成 ABB RAPID 喷涂程序——\\本地小模型 + 官方手册 RAG，工业 PC 断网可用。”
+\end{center}
+\vspace{4pt}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{做什么}：用户用\textbf{中文}描述喷涂需求，系统直接产出符合 ABB 规范、
+可导入 RobotStudio 的 \texttt{.mod} 程序。
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{怎么做到离线}：
+\begin{itemize}\small
+  \item 本地量化 LLM（Qwen2.5-Coder，CPU 可跑）
+  \item 官方手册 RAG（向量 + BM25 混合检索）
+  \item 数据\textbf{全程不出厂}
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 3. 系统设计：架构 + 流水线 ============
+\begin{frame}{系统设计：四层架构 + 六级流水线}
+\begin{columns}[T]
+\begin{column}{0.46\textwidth}
+\centering\footnotesize\textbf{\color{abbred}四层架构}\\[3pt]
+\begin{tikzpicture}
+\node[blk,fill=abblight,text width=4.3cm] (c){CLI 层 · gen/chat/kb/...};
+\node[blk,fill=boxblue,text width=4.3cm,below=3pt of c](o){编排层 Agent · 流水线};
+\node[hot,minimum width=1.3cm,below=11pt of o.south,xshift=-1.6cm](r){rag/};
+\node[hot,minimum width=1.3cm,below=11pt of o.south](l){llm/};
+\node[hot,minimum width=1.3cm,below=11pt of o.south,xshift=1.6cm](p){rapid/};
+\node[blk,fill=abblight,text width=4.3cm,below=11pt of l](k){knowledge/ → ChromaDB};
+\draw[fl](c)--(o);\draw[fl](o.south)--(r.north);\draw[fl](o)--(l);\draw[fl](o.south)--(p.north);\draw[fl](r)--(k);
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.54\textwidth}
+\centering\footnotesize\textbf{\color{abbred}六级生成流水线}\\[3pt]
+\begin{tikzpicture}[node distance=4pt]
+\node[hot,text width=2.0cm](q){中文需求};
+\node[blk,text width=2.0cm,right=4pt of q](a){\ding{172} 查询改写};
+\node[blk,text width=2.0cm,below=4pt of a](b){\ding{173} 混合检索};
+\node[blk,text width=2.0cm,left=4pt of b](cc){\ding{174} 上下文装配};
+\node[blk,text width=2.0cm,below=4pt of cc](d){\ding{175} 本地 LLM};
+\node[blk,text width=2.0cm,right=4pt of d](e){\ding{176} 校验后处理};
+\node[hot,text width=2.0cm,below=4pt of e](f){\ding{177} .mod 输出};
+\draw[fl](q)--(a);\draw[fl](a)--(b);\draw[fl](b)--(cc);\draw[fl](cc)--(d);\draw[fl](d)--(e);\draw[fl](e)--(f);
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\vspace{2pt}
+{\footnotesize 设计取向：纯函数流水线、不可变数据、副作用集中于 Ollama/ChromaDB 边界——\textbf{易测、可演进、能离线}。}
+\end{frame}
+
+% ============ 4. 关键技术 ============
+\begin{frame}[fragile]{关键技术：领域 RAG + 生成—校验闭环}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{\color{abbred}\ding{172} 领域专精 RAG（抑制幻觉）}
+\begin{itemize}\small
+  \item 10 本官方手册 → \textbf{7497} 片段向量库
+  \item 向量 + BM25 混合：$\alpha\hat s_{vec}+(1{-}\alpha)\hat s_{bm25}$
+  \item 让小模型也能正确引用 \texttt{MToolTCPCalib}、\texttt{TriggIO} 等专业指令
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{\color{abbred}\ding{173} 生成—校验闭环（安全护栏）}
+\begin{itemize}\small
+  \item 11 类静态校验 + 可追溯错误码
+  \item 把现场高代价错误\textbf{左移到生成时拦截}
+\end{itemize}
+\vspace{2pt}
+\begin{lstlisting}[style=con]
+[ERROR][PNT001] 缺 brushdata 形参
+[ERROR][IO001]  信号不在 EIO.cfg 白名单
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 5. 双控制器 + Pack&Go ============
+\begin{frame}{双控制器自适应 + Pack\&Go 一键交付}
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\textbf{\color{abbred}IRC5 / IRC5P 一键切换}\\[2pt]
+\small 同一句话，按控制器产出不同工艺风格：
+\begin{itemize}\small
+  \item \textbf{IRC5}：\texttt{MoveL + SetDO} 手动开关枪
+  \item \textbf{IRC5P}：\texttt{PaintL/PaintC + brushdata} 原生工艺
+\end{itemize}
+\texttt{controller} 是贯穿\,提示词/生成/校验/交付\,的一等参数。
+\end{column}
+\begin{column}{0.44\textwidth}
+\textbf{\color{abbred}Pack\&Go 一键交付}\\[2pt]
+\small 一句需求 → 可直接加载控制器的完整目录：
+\begin{itemize}\small
+  \item \texttt{.mod + BASE.sys + T\_ROB1.pgf + README}
+  \item 自动处理 ISO-8859-1 / CRLF 编码细节
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 6. 创新点 ============
+\begin{frame}{创新点总览}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\begin{enumerate}\small
+  \item 完全离线的工业领域代码生成
+  \item 官方手册 RAG 知识注入，抑制幻觉
+  \item IRC5 / IRC5P 双控制器自适应
+  \item 生成—校验闭环（11 类规则 + 错误码）
+\end{enumerate}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{enumerate}\small
+  \setcounter{enumi}{4}
+  \item Pack\&Go 一键交付可加载目录
+  \item 一键离线迁移（bundle / restore）
+  \item 安全护栏内建（TCP/IO/人工复核）
+\end{enumerate}
+\vspace{4pt}
+{\footnotesize\color{abbgray} 范式可迁移至 KUKA KRL、FANUC TP、PLC ST 等封闭工控生态。}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 7. 实测与佐证 ============
+\begin{frame}{工程质量与实测佐证}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+单元测试 & \redb{156} 通过 / 0.94s（实测）\\
+核心覆盖率 & 92\%–\redb{100}\%（实测）\\
+代码规模 & $\approx$4506 行 / 37 文件\\
+知识库 & \redb{7497} 片段 / 10 本手册\\
+本地 LLM & Qwen2.5-Coder-7B Q4 (4.5GB)\\
+端到端 & 20–35s（i5/16G，无 GPU）\\
+\bottomrule
+\end{tabular}
+\\[4pt]
+{\scriptsize 测试无需 GPU/Ollama，任意机器秒级可复现。}
+\end{column}
+\begin{column}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{02-demo.png}\\
+{\scriptsize 在线演示页：交互式 Pipeline + 真实 .mod 流式输出}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 8. 应用案例 ============
+\begin{frame}[fragile]{应用案例：车门 Z 字喷涂（IRC5P）}
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+\begin{lstlisting}[style=rapidmini]
+MODULE DoorPaint_IRC5P
+  PERS tooldata tSprayGun := [...];
+  PERS brushdata bdMain := [80,300,50,...];
+  PROC main()
+    ConfL\Off; SingArea\Wrist;
+    ! Z 字扫描 (IRC5P PaintL)
+    MoveL p0, v500, fine, tSprayGun\WObj:=wobjPart;
+    PaintL p1, vPaint, bdMain, z10, tSprayGun\WObj:=wobjPart;
+    ! ... 逐行 Y 偏移 50mm 往返 ...
+  ENDPROC
+ENDMODULE
+\end{lstlisting}
+\end{column}
+\begin{column}{0.4\textwidth}
+\small 一句话\,“600$\times$400 平板 Z 字扫描，行距 50mm”：
+\begin{itemize}\small
+  \item 自动补全 tooldata/wobjdata/speeddata/brushdata
+  \item 安全模板 + 中文注释
+  \item 通过静态校验，可直接 Pack\&Go 交付
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============ 9. 总结 ============
+\begin{frame}{总结}
+\begin{itemize}
+  \item 直面喷涂现场\textbf{“无网 + 高门槛”}真实痛点，做\textbf{完全离线}的中文 AI 编程助手
+  \item \textbf{本地 LLM + 官方手册 RAG + 生成—校验闭环}，把数小时专家工作压到数十秒
+  \item 工程成熟：\textbf{156 测试通过}、核心覆盖 92–100\%、端到端 20–35s、可复现
+  \item 方法论\textbf{可迁移}到更广的封闭工业机器人 / PLC 生态
+\end{itemize}
+\vfill
+\begin{center}
+{\color{abbgray}\small 源码 \texttt{github.com/Hollis36/abb-offline-coder}\quad·\quad
+演示 \texttt{hollis36.github.io/abb-offline-coder}}\\[6pt]
+{\Large\bfseries\color{abbred} 谢谢！恳请指正}
+\end{center}
+\end{frame}
+
+\end{document}
