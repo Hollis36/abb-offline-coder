@@ -314,9 +314,14 @@ BASE.sys / T\_ROB1.pgf / README.md / MANIFEST.ok & — & 同上结构 \\
 \end{lstlisting}
 
 % =====================================================================
-\section{佐证五 · 项目演示页截图 \normalfont\small［本环境实测复现］}
+\section{佐证五 · 公开发布物料（在线演示页 + GitHub 仓库）\normalfont\small［本环境实测复现］}
 
-项目自带可离线浏览的展示页（\texttt{docs/index.html}，已部署到 GitHub Pages），
+项目已开源并部署在线演示页，二者均为可公开核验的第三方物料。
+在线演示页：\url{https://hollis36.github.io/abb-offline-coder/}\quad
+开源仓库：\url{https://github.com/Hollis36/abb-offline-coder}
+
+\subsection{在线演示页截图}
+展示页（\texttt{docs/index.html}，已部署到 GitHub Pages，离线可浏览）
 含交互式 Pipeline 演示、架构图、真实 \texttt{.mod} 样本与性能规格表。以下为页面实截图。
 
 \begin{figure}[h]
@@ -349,8 +354,48 @@ BASE.sys / T\_ROB1.pgf / README.md / MANIFEST.ok & — & 同上结构 \\
 \end{minipage}
 \end{figure}
 
-\noindent 在线地址：\url{https://hollis36.github.io/abb-offline-coder/}\quad
-源码：\url{https://github.com/Hollis36/abb-offline-coder}
+\subsection{GitHub 仓库公开信息（可核验）}
+仓库对外的简介、徽章、标签与许可如下表，均可在仓库首页直接核验。
+
+\begin{table}[h]
+\centering
+\caption{GitHub 仓库元信息（实录）}
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{项} & \textbf{值} \\
+\midrule
+仓库简介 & 离线 AI 编程助手 · 中文需求 → ABB RAPID 喷涂程序 · 本地 LLM（Qwen2.5-Coder）+ 官方手册 RAG · 工业 PC 断网可用 \\
+徽章 Badges & \texttt{Live Demo: Online} \,\textbar\, \texttt{License: MIT} \,\textbar\, \texttt{Python 3.10+} \,\textbar\, \texttt{tests passed} \,\textbar\, \texttt{Pages: deployed} \\
+主要语言 & Python（约 87.3\%）\\
+开源许可 & MIT License \\
+技术标签 & rag · ollama · qwen · chromadb · offline-llm · abb-robotics · rapid-language · spray-painting · robotstudio · industrial-robot · chinese-nlp · cli-tool \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{演示页公开的真实生成样本}
+演示页 “Specimens” 区公开了三个真实生成、并经校验的 \texttt{.mod} 样本，其耗时与
+项目 \texttt{PROJECT\_STATUS.md} 中的端到端测试记录\textbf{一致}（直线 78\,s、TCP 校准 102\,s、TriggIO 同步 194\,s），互为印证。
+
+\begin{table}[h]
+\centering
+\caption{演示页公开样本（与 PROJECT\_STATUS 端到端记录一致）}
+\small
+\begin{tabularx}{\textwidth}{@{}l l l X@{}}
+\toprule
+\textbf{编号} & \textbf{样本} & \textbf{体积 / 校验耗时} & \textbf{场景} \\
+\midrule
+A-01 & PaintLine.mod      & 1.4\,KB / 78\,s  & 直线扫描喷涂 \\
+A-02 & PaintTrigSync.mod  & 2.1\,KB / 194\,s & TriggIO 距离触发精确同步 \\
+A-03 & CalibSprayTCP.mod  & 1.9\,KB / 102\,s & 喷枪 TCP 4 点法校准 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\emph{版本快照说明：演示页发布的是项目早期快照（标注约 3664 行 / 67 测试 / 0.5\,s）；
+本材料佐证二中由我们对当前仓库 HEAD 实测为约 4506 行 / 156 个通过用例 ——
+数字差异恰好印证项目处于持续迭代中（参见佐证一 Git 历史）。}
 
 % =====================================================================
 \section{佐证六 · 知识库与模型清单 \normalfont\small［项目记录］}
