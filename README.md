@@ -223,13 +223,16 @@ abb-agent chat
 
 ```bash
 # 用更小的备用模型（弱配工业 PC）
-export ABB_AGENT_LLM__MODEL_NAME="qwen2.5-coder:3b-instruct-q4_K_M"
+export ABB_AGENT_LLM_MODEL_NAME="qwen2.5-coder:3b-instruct-q4_K_M"
 
 # 调高温度增加多样性
-export ABB_AGENT_LLM__TEMPERATURE=0.4
+export ABB_AGENT_LLM_TEMPERATURE=0.4
+
+# 纯 CPU / 弱配机器推理慢，调高单次请求超时（默认 120 秒可能不够）
+export ABB_AGENT_LLM_TIMEOUT_SECONDS=900
 
 # 改用 GPU 推理（如果有）
-export ABB_AGENT_EMBED__DEVICE="cuda"
+export ABB_AGENT_EMBED_DEVICE="cuda"
 
 # 全局切到 IRC5P 模式（持久；优先级低于命令行 --controller）
 export ABB_AGENT_RAPID_CONTROLLER=IRC5P
