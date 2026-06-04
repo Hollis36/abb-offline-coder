@@ -4,23 +4,32 @@
 
 - **队伍名称**：人工智能创新001
 - **比赛赛项**：人工智能创新赛
-- 源文件：[`main.tex`](main.tex)（LaTeX，`ctexart` 中文排版）
-- 成品：[`main.pdf`](main.pdf)（17 页）
+
+本目录含两份材料：
+
+| 文件 | 内容 | 页数 |
+|------|------|------|
+| [`main.tex`](main.tex) / [`main.pdf`](main.pdf) | **项目研究报告**（背景 · 架构 · 关键技术 · 创新点 · 实测） | 17 |
+| [`evidence.tex`](evidence.tex) / [`evidence.pdf`](evidence.pdf) | **项目佐证材料**（Git 历史 · 单元测试实跑 · 覆盖率 · 核心能力实证 · 真实产物 · 演示页截图） | 7 |
+
+> 佐证材料中的单元测试与覆盖率均为**可复现实测**（156 个用例全部通过，无需 GPU/Ollama）；
+> 知识库/端到端等数据标注为「项目记录」，来源于 `PROJECT_STATUS.md` / `EXECUTION_LOG.md`。
 
 ## 编译方式
 
-报告使用中文，需用 **XeLaTeX** 编译（依赖 `ctex` 宏包 + Noto CJK 字体）。
-为生成目录与交叉引用，请运行两次：
+两份材料均为中文，需用 **XeLaTeX** 编译（依赖 `ctex` 宏包 + Noto CJK 字体）。
+为生成目录与交叉引用，请各运行两次：
 
 ```bash
-xelatex main.tex
-xelatex main.tex
+xelatex main.tex     && xelatex main.tex       # 研究报告
+xelatex evidence.tex && xelatex evidence.tex   # 佐证材料（需能读到 ../docs/screenshots/*.png）
 ```
 
 或使用 `latexmk`：
 
 ```bash
 latexmk -xelatex main.tex
+latexmk -xelatex evidence.tex
 ```
 
 ### 依赖

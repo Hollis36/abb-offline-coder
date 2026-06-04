@@ -1,0 +1,408 @@
+% =====================================================================
+%  项目佐证材料 —— abb-offline-coder
+%  比赛赛项：人工智能创新赛   队伍名称：人工智能创新001
+%  编译：xelatex evidence.tex （两次）
+% =====================================================================
+\documentclass[11pt,a4paper,fontset=none]{ctexart}
+
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+
+\usepackage[a4paper,margin=2.3cm,headheight=26pt]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{pifont}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[section]{placeins}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc}
+\usepackage[hidelinks,colorlinks=true,linkcolor=abbdark,urlcolor=abbred]{hyperref}
+
+\definecolor{abbred}{RGB}{217,74,31}
+\definecolor{abbdark}{RGB}{19,19,19}
+\definecolor{abbgray}{RGB}{90,90,90}
+\definecolor{abblight}{RGB}{245,242,240}
+\definecolor{codebg}{RGB}{248,248,246}
+\definecolor{consolebg}{RGB}{20,24,28}
+\definecolor{consolefg}{RGB}{222,226,230}
+\definecolor{okgreen}{RGB}{40,150,70}
+\definecolor{linegray}{RGB}{210,210,210}
+\definecolor{boxblue}{RGB}{225,235,245}
+
+\graphicspath{{../docs/screenshots/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily 人工智能创新赛 · 项目佐证材料}
+\fancyhead[R]{\small\sffamily abb-offline-coder}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{linegray}\leaders\hrule height \headrulewidth\hfill}}
+
+\titleformat{\section}
+  {\large\bfseries\sffamily\color{abbdark}}
+  {\color{abbred}\thesection}{0.6em}{}
+  [\vspace{2pt}{\color{abbred}\titlerule[1pt]}]
+\titleformat{\subsection}
+  {\normalsize\bfseries\sffamily\color{abbdark}}
+  {\color{abbred}\thesubsection}{0.5em}{}
+
+\lstdefinestyle{base}{
+  backgroundcolor=\color{codebg},basicstyle=\ttfamily\scriptsize,breaklines=true,
+  columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,
+  rulecolor=\color{linegray},framesep=5pt,xleftmargin=6pt,extendedchars=true,
+  commentstyle=\color{abbgray}\itshape,keywordstyle=\color{abbred}\bfseries,
+}
+\lstdefinestyle{console}{style=base,backgroundcolor=\color{consolebg},
+  basicstyle=\ttfamily\scriptsize\color{consolefg},keywordstyle={},commentstyle={},
+  rulecolor=\color{abbdark}}
+\lstdefinestyle{rapid}{style=base,
+  morekeywords={MODULE,ENDMODULE,PROC,ENDPROC,PERS,CONST,VAR,MoveL,PaintL,SetDO,
+    ConfL,SingArea,TRAP,ENDTRAP,SYSMODULE},comment=[l]{!},morestring=[b]"}
+
+\captionsetup{font=small,labelfont={bf,sf},labelsep=period}
+\setlist{itemsep=2pt,topsep=3pt,parsep=0pt}
+\renewcommand{\arraystretch}{1.22}
+
+\newcommand{\yes}{{\color{okgreen}\ding{51}}}
+\newcommand{\shot}[1]{\setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.5pt}%
+  \fcolorbox{linegray}{white}{\includegraphics[width=\linewidth]{#1}}}
+
+% =====================================================================
+\begin{document}
+\thispagestyle{fancy}
+
+% ---------- 抬头块 ----------
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[abbred] (current page.north west) rectangle ([yshift=-0.9cm]current page.north east);
+\end{tikzpicture}
+
+\begin{center}
+{\sffamily\bfseries\color{abbgray}\normalsize 人工智能创新赛 \quad 项目佐证材料}\\[6pt]
+{\sffamily\Huge\bfseries\color{abbdark} abb-offline-coder}\\[3pt]
+{\color{abbred}\rule{4.5cm}{1.6pt}}\\[4pt]
+{\sffamily\large 面向 ABB 喷涂机器人的离线 AI 编程助手 —— 可复现实证}\\[8pt]
+{\sffamily\small\color{abbgray}
+队伍：\textbf{人工智能创新001} \quad|\quad 赛项：人工智能创新赛 \quad|\quad 2026-06}
+\end{center}
+\vspace{4pt}
+
+% ---------- 材料性质说明 ----------
+\noindent
+\begin{tikzpicture}
+\node[draw=abbred,line width=0.9pt,rounded corners=4pt,fill=abblight,
+      inner sep=9pt,text width=\dimexpr\linewidth-20pt\relax]{%
+\small\textbf{\color{abbred}材料性质说明（确保可追溯）}\\[3pt]
+本材料分两类证据，已明确标注来源，便于评委复核：\\[2pt]
+\textbf{\color{abbdark}［本环境实测复现］}—— 在评审可复现的干净环境中由我们现场运行所得
+（单元测试、覆盖率、核心逻辑实跑、仓库内真实产物、Git 历史）；\\[2pt]
+\textbf{\color{abbdark}［项目记录］}—— 取自项目自带的
+\texttt{PROJECT\_STATUS.md} / \texttt{EXECUTION\_LOG.md}（作者在配套硬件上的历史实测，
+如 7497 片段知识库、端到端 20--35s、离线包 192\,MB），上机前建议按现场环境复测。%
+};
+\end{tikzpicture}
+
+\vspace{8pt}
+\tableofcontents
+\vspace{6pt}
+
+% =====================================================================
+\section{佐证一 · 开发历程与代码仓库 \normalfont\small［本环境实测复现］}
+
+\subsection{真实 Git 提交历史（19 次提交，跨度 2026-05-16 \textasciitilde{} 06-04）}
+项目并非一次性堆砌，而是有清晰的分阶段演进：从初始 CLI+RAG 骨架，到 IRC5P 工艺、
+Pack\&Go 交付、演示页，再到本套竞赛材料。下表为 \texttt{git log} 实录（节选关键节点）。
+
+\begin{table}[h]
+\centering
+\caption{Git 提交历史（实录，按时间倒序节选）}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{Commit} & \textbf{日期} & \textbf{说明} \\
+\midrule
+\texttt{e8289db} & 2026-06-04 & docs(report)：新增人工智能创新赛项目研究报告（LaTeX）\\
+\texttt{b4b3a0d} & 2026-05-22 & Merge PR \#1：合并 IRC5P / 演示页特性分支 \\
+\texttt{f3438ec} & 2026-05-22 & feat(docs)：演示页交互式 playground \\
+\texttt{a7df6a4} & 2026-05-20 & feat(examples)：IRC5 vs IRC5P 并排 door-zigzag 产物 \\
+\texttt{ebc2d53} & 2026-05-20 & feat(cli)：控制器模式开关与 Pack\&Go 目录输出 \\
+\texttt{e53b94d} & 2026-05-20 & feat(llm,agent)：IRC5P 感知的 Prompt 与流水线打通 \\
+\texttt{9cc8db2} & 2026-05-20 & feat(rapid)：IRC5P 部署用 Pack\&Go 系统包 \\
+\texttt{b9fe12a} & 2026-05-20 & feat(rapid)：IRC5P 代码生成与校验 \\
+\texttt{980485d} & 2026-05-20 & feat(config)：RapidConfig 控制器模式与 IO 白名单 \\
+\texttt{75f2ce0} & 2026-05-19 & feat(scripts)：一键 bundle/restore 离线迁移脚本 \\
+\texttt{91abe0e} & 2026-05-17 & docs：项目演示页 docs/index.html \\
+\texttt{bb88d18} & 2026-05-16 & feat：初始提交 —— 离线 ABB RAPID 喷涂 AI 助手 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{代码规模（\texttt{wc -l} 实测）}
+\begin{table}[h]
+\centering
+\caption{核心 Python 包 \texttt{abb\_agent} 代码量（按模块）}
+\small
+\begin{tabular}{@{}l r l@{}}
+\toprule
+\textbf{模块} & \textbf{行数} & \textbf{职责} \\
+\midrule
+\texttt{rapid/}     & 1448 & 校验 / 模板 / 喷涂 helper / Pack\&Go \\
+\texttt{knowledge/} & 914  & PDF/MOD/HTML 解析 + 切片 \\
+\texttt{rag/}       & 776  & 改写 / 嵌入 / 向量库 / 混合检索 / 装配 \\
+\texttt{cli/}       & 608  & gen/chat/kb/init/doctor 子命令 \\
+\texttt{llm/}       & 354  & Ollama 客户端 + Prompt 模板 \\
+\midrule
+\textbf{合计} & \textbf{4506} & \textbf{37 个 Python 源文件} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{佐证二 · 单元测试实测 \normalfont\small［本环境实测复现］}
+
+在干净的 Python 3.11 虚拟环境中安装轻量依赖后，运行全部单元测试，
+\textbf{156 个用例全部通过，用时 0.94 秒}（22 个测试文件）。
+\emph{注：单元测试无需 GPU、无需启动 Ollama —— LLM 客户端在测试中被打桩（mock），
+ChromaDB 为惰性加载，故在任意机器上均可秒级复现。}
+
+\begin{lstlisting}[style=console,caption={pytest 实跑结尾（终端实录）}]
+tests/unit/test_rapid_validator_irc5p.py .............            [ 84%]
+tests/unit/test_system_bundle.py .........                       [ 90%]
+tests/unit/test_system_bundle_encoding.py ......                 [ 94%]
+tests/unit/test_validator_fixes.py .........                     [100%]
+
+===================== 156 passed in 0.94s =====================
+\end{lstlisting}
+
+\subsection{按测试文件分布（22 个文件 / 156 用例）}
+\begin{table}[h]
+\centering
+\caption{单元测试用例分布（实测计数，合计 156）}
+\small
+\begin{tabularx}{\textwidth}{@{}Xr Xr@{}}
+\toprule
+\textbf{测试文件} & \textbf{用例} & \textbf{测试文件} & \textbf{用例} \\
+\midrule
+test\_rapid\_validator\_irc5p   & 13 & test\_rapid\_module\_template      & 6 \\
+test\_rapid\_painting\_helpers  & 11 & test\_prompt\_templates\_irc5p     & 6 \\
+test\_query\_rewriter           & 11 & test\_config\_io\_whitelist        & 6 \\
+test\_rapid\_validator          & 10 & test\_rapid\_formatter             & 5 \\
+test\_rapid\_painting\_helpers\_irc5p & 10 & test\_rag\_models             & 5 \\
+test\_validator\_fixes          & 9  & test\_mod\_parser                  & 5 \\
+test\_system\_bundle            & 9  & test\_context\_builder             & 5 \\
+test\_rapid\_module\_template\_irc5p & 7 & test\_chunker                   & 5 \\
+test\_cli\_controller           & 7  & test\_agent\_postprocess\_irc5p    & 5 \\
+test\_brushdata\_safety         & 7  & test\_bundle\_safety               & 4 \\
+test\_system\_bundle\_encoding  & 6  & test\_agent\_postprocess           & 4 \\
+\midrule
+\multicolumn{4}{@{}r@{}}{\textbf{合计：22 个文件 / 156 个用例 / 全部通过}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{代码覆盖率（\texttt{pytest-cov} 实测）}
+核心\textbf{领域逻辑模块}覆盖率达 92\%--100\%；覆盖率较低者均为
+\textbf{外部 I/O 边界}（Ollama 客户端、ChromaDB 向量库、爬虫、PDF 解析、CLI 渲染），
+其调用真实外部服务，符合“副作用集中于边界、纯逻辑高覆盖”的设计取向。
+
+\begin{table}[h]
+\centering
+\caption{核心领域逻辑模块覆盖率（实测）}
+\small
+\begin{tabularx}{\textwidth}{@{}X r r | X r r@{}}
+\toprule
+\textbf{模块} & \textbf{语句} & \textbf{覆盖} & \textbf{模块} & \textbf{语句} & \textbf{覆盖} \\
+\midrule
+rapid/painting\_helpers & 64  & \textbf{100\%} & config            & 86  & 95\% \\
+rapid/system\_bundle    & 46  & \textbf{100\%} & cli/main          & 22  & 95\% \\
+rag/context\_builder    & 40  & \textbf{100\%} & llm/prompts/templates & 44 & 93\% \\
+rag/query\_rewriter     & 42  & \textbf{100\%} & knowledge/mod\_parser & 46 & 93\% \\
+rapid/formatter         & 71  & 99\%           & rapid/validator   & 206 & 92\% \\
+rapid/module\_template  & 119 & 97\%           & knowledge/chunker & 61  & 84\% \\
+rag/models              & 61  & 97\%           & \textit{（项目整体）} & 1988 & \textit{60\%} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+\section{佐证三 · 核心能力实跑 \normalfont\small［本环境实测复现］}
+
+直接调用项目核心 API，对真实输入实跑，验证“理解需求 → 生成合法代码 → 主动拦截缺陷”闭环。
+以下为终端实录输出。
+
+\subsection{证据 A：中文需求被正确理解与改写}
+\begin{lstlisting}[style=console]
+>>> rewrite("对600x400矩形面做 Z 字扫描喷涂，行距50mm，TriggIO 精确同步喷枪")
+识别任务类别: zigzag_scan
+抽取关键词: TriggData TriggIO TriggL back coating distance forth gun ...
+\end{lstlisting}
+
+\subsection{证据 B：对仓库内真实样例校验通过}
+\begin{lstlisting}[style=console]
+>>> validate(open("examples/door_zigzag_irc5p/DoorPaint_IRC5P.mod").read(),
+...          controller="IRC5P", io_whitelist=("doSprayOn","doFanOn","doAtomOn"))
+RAPID 语法校验通过      is_valid: True
+\end{lstlisting}
+
+\subsection{证据 C：校验器主动拦截缺陷代码（安全护栏生效）}
+对一段\textbf{故意写错}的代码（漏 brushdata 形参、引用未注册信号），校验器精确报错并给出错误码：
+\begin{lstlisting}[style=console]
+>>> validate(bad_code, controller="IRC5P", io_whitelist=("doSprayOn",), strict_tcp=True)
+[ERROR][PNT001] L4: PaintL 参数数量 4 不足 (5)，很可能缺少 brushdata 形参
+[ERROR][IO001]  L5: IO 信号 'doUnknownSig' 不在 EIO.cfg 白名单中。已知信号: doSprayOn
+-- 共 2 错误, 0 警告
+\end{lstlisting}
+\noindent 这正是把“现场才会暴露的高代价错误（如上机报 40212 信号未定义）”左移到\textbf{生成时拦截}的实证。
+
+\subsection{证据 D：一行需求 → 合法 RAPID（IRC5P PaintL）}
+\begin{lstlisting}[style=console]
+>>> zigzag_scan(Pose(0,0,300), width=600, height=100, row_spacing=50, controller="IRC5P")
+        ! Z 字扫描喷涂 (IRC5P PaintL)
+        MoveL  [[0,0,300],...],   v500,  fine, tSprayGun\WObj:=wobjPart;
+        PaintL [[600,0,300],...], vPaint, bdMain, z10, tSprayGun\WObj:=wobjPart;
+        ...
+\end{lstlisting}
+
+% =====================================================================
+\section{佐证四 · 真实生成产物 \normalfont\small［本环境实测复现］}
+
+仓库 \texttt{examples/} 内留存两套\textbf{真实生成、可直接加载控制器}的 Pack\&Go 目录
+（IRC5 与 IRC5P 各一套），结构与字节数实测如下。每套均含主程序、系统模块、
+任务清单与加载说明，并以 \texttt{MANIFEST.ok} 标记“完整写入”。
+
+\begin{table}[h]
+\centering
+\caption{Pack\&Go 真实产物清单（\texttt{ls -l} 实测字节数）}
+\small
+\begin{tabularx}{\textwidth}{@{}l r X@{}}
+\toprule
+\textbf{文件} & \textbf{字节} & \textbf{作用} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{examples/door\_zigzag\_irc5p/（IRC5P 模式）}}\\
+DoorPaint\_IRC5P.mod & 3126 & 主程序：PaintL + brushdata 工艺 \\
+BASE.sys             & 1578 & 系统模块：Home 位 + 错误恢复 trap（纯 ASCII / Latin-1+CRLF）\\
+T\_ROB1.pgf          & 142  & XML 任务清单（控制器据此加载）\\
+README.md            & 1864 & 三种加载方式 + 上线 4 步清单 \\
+MANIFEST.ok          & 60   & 完整写入标志 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{examples/door\_zigzag\_irc5/（IRC5 模式，MoveL+SetDO）}}\\
+DoorPaint\_IRC5.mod  & 3195 & 主程序：MoveL + SetDO 喷涂开关 \\
+BASE.sys / T\_ROB1.pgf / README.md / MANIFEST.ok & — & 同上结构 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{控制器编码细节实证}：\texttt{T\_ROB1.pgf} 与 \texttt{BASE.sys} 实测以
+\texttt{ISO-8859-1 + CRLF} 写入、\texttt{BASE.sys} 保持纯 ASCII，
+正是为兼容老版本 RobotWare 默认 Latin-1 解码（避免中文致加载失败）——细节见下方实录：
+\begin{lstlisting}[style=rapid,caption={examples/door\_zigzag\_irc5p/T\_ROB1.pgf（实录）}]
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<Program>
+    <Module>BASE.sys</Module>
+    <Module>DoorPaint_IRC5P.mod</Module>
+</Program>
+\end{lstlisting}
+
+% =====================================================================
+\section{佐证五 · 项目演示页截图 \normalfont\small［本环境实测复现］}
+
+项目自带可离线浏览的展示页（\texttt{docs/index.html}，已部署到 GitHub Pages），
+含交互式 Pipeline 演示、架构图、真实 \texttt{.mod} 样本与性能规格表。以下为页面实截图。
+
+\begin{figure}[h]
+\centering
+\shot{00-banner.png}
+\caption{演示页横幅（abb-offline-coder live demo banner）}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.49\textwidth}\centering
+\shot{02-demo.png}\\[2pt]
+{\small 交互式 Pipeline 演示（6 步流水线 + 流式 .mod 输出）}
+\end{minipage}\hfill
+\begin{minipage}{0.49\textwidth}\centering
+\shot{03-architecture.png}\\[2pt]
+{\small 分层架构工程图}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.49\textwidth}\centering
+\shot{05-samples.png}\\[2pt]
+{\small 真实生成的 RAPID 样本展示}
+\end{minipage}\hfill
+\begin{minipage}{0.49\textwidth}\centering
+\shot{06-spec.png}\\[2pt]
+{\small 技术规格 / 性能数据铭牌}
+\end{minipage}
+\end{figure}
+
+\noindent 在线地址：\url{https://hollis36.github.io/abb-offline-coder/}\quad
+源码：\url{https://github.com/Hollis36/abb-offline-coder}
+
+% =====================================================================
+\section{佐证六 · 知识库与模型清单 \normalfont\small［项目记录］}
+
+下列数据取自项目自带的 \texttt{PROJECT\_STATUS.md} 与 \texttt{EXECUTION\_LOG.md}
+（作者在配套硬件上的历史实测；原始 \texttt{data/}、\texttt{models/} 因体积巨大被
+\texttt{.gitignore}，不随仓库分发，需按文档在有网环境重建）。
+
+\begin{table}[h]
+\centering
+\caption{离线知识库与模型规格（项目记录）}
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{项} & \textbf{值} \\
+\midrule
+官方手册   & 10 本真实 ABB 手册，约 54\,MB（RAPID 参考手册 3HAC16581、Painting PowerPac 3HNA019758、IRB 52/5400/5710 等）\\
+向量库     & ChromaDB 7497 个切片 / 约 52\,MB（27 个 PDF 章节解析入库）\\
+嵌入模型   & BAAI/bge-small-zh-v1.5，512 维，约 92\,MB，CPU 推理 \\
+主 LLM     & Qwen2.5-Coder-7B-Instruct Q4\_K\_M（约 4.5\,GB），3B 为弱机回退 \\
+离线包     & 精简版约 192\,MB（含源码 + 手册 + 向量库 + 嵌入模型）\\
+端到端     & 单次生成约 20--35\,s（i5 + 16\,GB，无 GPU）\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{检索质量实证（项目记录）}：在“TCP 校准 工具坐标定义”查询下，系统从 7497 片段中
+检索到 ABB 官方 \texttt{MToolTCPCalib} 指令文档——这是一个小模型通常\textbf{不知道}的专业指令名，
+经 RAG 注入后被正确引用进生成代码，直接验证了“离线 RAG 抑制幻觉”的有效性。
+
+% =====================================================================
+\section{复现说明（评委可自行验证）}
+
+佐证二、三的所有结果均可在任意装有 Python 3.10+ 的机器上\textbf{秒级复现}，无需 GPU / Ollama：
+
+\begin{lstlisting}[style=base,caption={一键复现单元测试与覆盖率}]
+git clone https://github.com/Hollis36/abb-offline-coder && cd abb-offline-coder
+python3 -m venv .venv && . .venv/bin/activate
+pip install pydantic pydantic-settings loguru pytest pytest-cov \
+            typer rich rank-bm25 beautifulsoup4 lxml jinja2 httpx tenacity
+pytest tests/unit -q                         # 预期：156 passed
+pytest tests/unit --cov=abb_agent            # 查看覆盖率
+\end{lstlisting}
+
+\noindent 佐证六（知识库 / 端到端生成）需补装 \texttt{chromadb}、\texttt{sentence-transformers}
+并按 \texttt{README} 用 Ollama 拉取本地模型、重建向量库后方可完整复现。
+
+\vspace{10pt}
+\begin{center}
+{\color{linegray}\rule{0.5\textwidth}{0.6pt}}\\[6pt]
+{\sffamily\small\color{abbgray}
+人工智能创新赛 · 项目佐证材料 \quad|\quad 队伍：人工智能创新001 \quad|\quad abb-offline-coder}
+\end{center}
+
+\end{document}
