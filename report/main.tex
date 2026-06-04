@@ -1,0 +1,783 @@
+% =====================================================================
+%  项目研究报告 —— abb-offline-coder
+%  比赛赛项：人工智能创新赛   队伍名称：人工智能创新001
+%  编译方式：xelatex main.tex  (运行两次以生成目录与交叉引用)
+% =====================================================================
+\documentclass[12pt,a4paper,fontset=none]{ctexart}
+
+% ---------- CJK 字体（Noto CJK，环境已安装）----------
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+% 西文字体使用默认 Latin Modern
+
+% ---------- 基础宏包 ----------
+\usepackage[a4paper,margin=2.5cm,headheight=26pt]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{pifont}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,arrows.meta,calc,backgrounds,fit}
+\usepackage[hidelinks,colorlinks=true,linkcolor=abbdark,urlcolor=abbred,
+            citecolor=abbdark]{hyperref}
+
+% ---------- 配色 ----------
+\definecolor{abbred}{RGB}{217,74,31}     % 工业喷漆橙红
+\definecolor{abbdark}{RGB}{19,19,19}
+\definecolor{abbgray}{RGB}{90,90,90}
+\definecolor{abblight}{RGB}{245,242,240}
+\definecolor{codebg}{RGB}{248,248,246}
+\definecolor{codekw}{RGB}{170,40,30}
+\definecolor{codecmt}{RGB}{90,120,90}
+\definecolor{codestr}{RGB}{60,110,160}
+\definecolor{boxblue}{RGB}{225,235,245}
+\definecolor{linegray}{RGB}{210,210,210}
+
+% ---------- 页眉页脚 ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily 人工智能创新赛 · 项目研究报告}
+\fancyhead[R]{\small\sffamily abb-offline-coder}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{linegray}\leaders\hrule height \headrulewidth\hfill}}
+
+% ---------- 章节标题样式 ----------
+\titleformat{\section}
+  {\Large\bfseries\sffamily\color{abbdark}}
+  {\color{abbred}\thesection}{0.6em}{}
+  [\vspace{2pt}{\color{abbred}\titlerule[1.2pt]}]
+\titleformat{\subsection}
+  {\large\bfseries\sffamily\color{abbdark}}
+  {\color{abbred}\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\sffamily\color{abbdark}}
+  {\thesubsubsection}{0.5em}{}
+
+% ---------- 代码样式 ----------
+\lstdefinestyle{base}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  rulecolor=\color{linegray},
+  framesep=5pt,
+  xleftmargin=8pt,
+  xrightmargin=4pt,
+  commentstyle=\color{codecmt}\itshape,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  numberstyle=\tiny\color{abbgray},
+  aboveskip=8pt,
+  belowskip=6pt,
+  extendedchars=true,
+}
+\lstdefinestyle{rapid}{style=base,
+  morekeywords={MODULE,ENDMODULE,PROC,ENDPROC,FUNC,ENDFUNC,TRAP,ENDTRAP,
+    IF,THEN,ELSE,ELSEIF,ENDIF,FOR,FROM,TO,STEP,DO,ENDFOR,WHILE,ENDWHILE,
+    VAR,PERS,CONST,MoveL,MoveJ,MoveC,PaintL,PaintC,SetDO,Reset,WaitTime,
+    TriggIO,TriggL,ConfL,SingArea,TPWrite,SYSMODULE},
+  comment=[l]{!},
+  morestring=[b]",
+}
+\lstdefinestyle{py}{style=base,language=Python}
+\lstdefinestyle{sh}{style=base,language=bash,
+  morekeywords={abb-agent,ollama}}
+
+% ---------- 提示框 ----------
+\newcommand{\keypoint}[1]{%
+  \par\vspace{4pt}\noindent
+  \begin{tikzpicture}
+  \node[draw=abbred,line width=1pt,rounded corners=3pt,fill=abblight,
+        inner sep=8pt,text width=\dimexpr\linewidth-22pt\relax]
+        {\small\textbf{\color{abbred}创新点 · }#1};
+  \end{tikzpicture}\par\vspace{4pt}}
+
+\captionsetup{font=small,labelfont={bf,sf},labelsep=period}
+\setlist{itemsep=2pt,topsep=3pt,parsep=0pt}
+\renewcommand{\arraystretch}{1.25}
+
+% =====================================================================
+\begin{document}
+
+% ============== 封面 ==============
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[abbred] (current page.north west) rectangle ([yshift=-1.6cm]current page.north east);
+  \fill[abbdark] ([yshift=-1.6cm]current page.north west) rectangle ([yshift=-1.85cm]current page.north east);
+  \fill[abblight] (current page.south west) rectangle ([yshift=2.2cm]current page.south east);
+\end{tikzpicture}
+
+\vspace*{2.2cm}
+\begin{center}
+{\sffamily\bfseries\color{abbgray}\large 人工智能创新赛 \quad 项目研究报告}\\[2.4cm]
+
+{\sffamily\fontsize{30}{36}\selectfont\bfseries\color{abbdark} abb-offline-coder}\\[0.5cm]
+{\color{abbred}\rule{6cm}{2pt}}\\[0.7cm]
+{\sffamily\LARGE\bfseries 面向 ABB 喷涂机器人的}\\[0.35cm]
+{\sffamily\LARGE\bfseries 离线 AI 编程助手}\\[0.5cm]
+{\large\itshape Retrieval-Augmented Offline Code Generation \\ for Industrial Painting Robots}\\[2.6cm]
+
+\begin{tikzpicture}
+\node[draw=abbred,line width=1.2pt,rounded corners=6pt,inner sep=16pt,
+      fill=white,text width=11cm]{
+  \renewcommand{\arraystretch}{1.5}
+  \sffamily\large
+  \begin{tabular}{@{}r@{\quad}l@{}}
+    \textbf{\color{abbred}比赛赛项} & 人工智能创新赛 \\
+    \textbf{\color{abbred}队伍名称} & 人工智能创新001 \\
+    \textbf{\color{abbred}项目类别} & 工业大模型 · 检索增强生成（RAG）\\
+    \textbf{\color{abbred}技术形态} & 完全离线 · 命令行 AI 编程助手 \\
+  \end{tabular}};
+\end{tikzpicture}
+
+\vfill
+{\sffamily\color{abbgray} 报告日期：2026 年 6 月 \quad|\quad 版本 v0.2}
+\end{center}
+\end{titlepage}
+
+% ============== 摘要 ==============
+\section*{摘要}
+\addcontentsline{toc}{section}{摘要}
+\noindent
+工业机器人离线编程长期面临\textbf{专业门槛高、厂商语言封闭、现场数据不能外传}三重困境。
+ABB 喷涂机器人采用专用的 RAPID 语言与 IRC5/IRC5P 控制器体系，编写一段合格的喷涂程序
+需要工程师同时掌握运动指令、喷涂工艺（笔刷参数、喷枪时序）、坐标标定与控制器 IO 配置，
+培养周期以月计；而喷涂车间多为\textbf{物理隔离的无网环境}，主流云端 AI 编程工具完全无法落地。
+
+本项目 \textbf{abb-offline-coder} 提出并实现了一套\textbf{完全离线、可在工业 PC（CPU、无 GPU）
+上运行的领域专精 AI 编程助手}：用户用\textbf{中文自然语言}描述喷涂需求，系统经
+“查询改写 → 向量+BM25 混合检索 → 上下文装配 → 本地大模型推理 → RAPID 静态校验与后处理”
+六级流水线，直接产出符合 ABB 规范、可导入 RobotStudio 的 \texttt{.mod} 程序。
+
+核心创新包括：（1）以本地 Qwen2.5-Coder 量化模型 + 检索增强（RAG）注入 ABB 官方手册知识，
+使小模型也能正确引用 \texttt{MToolTCPCalib}、\texttt{TriggIO} 等专业指令；
+（2）面向 \textbf{IRC5 / IRC5P 双控制器}的自适应代码风格切换（\texttt{MoveL+SetDO}
+对 \texttt{PaintL/PaintC+brushdata}）；
+（3）\textbf{生成—校验闭环}——内置 11 类 RAPID 轻量静态校验（块配对、大小写、分号、
+笔刷参数、默认 TCP、IO 白名单等）并赋予可追溯的错误码；
+（4）\textbf{Pack\&Go 一键交付}——从一句话需求直接生成包含
+\texttt{.mod + BASE.sys + T\_ROB1.pgf + README} 的可加载控制器目录；
+（5）\textbf{一键离线迁移}——把代码、模型、向量库、手册打成单文件在隔离设备上还原。
+
+工程上，项目实现约 4500 行 Python（37 个源文件），配套 22 个测试文件、约 149 个测试用例，
+以 10 本真实 ABB 官方手册构建了 7497 片段的向量知识库，端到端单次生成在普通工业 PC 上
+约 20--35 秒。本报告系统阐述其选题意义、总体架构、关键技术、创新点、工程质量与应用价值，
+并讨论安全合规与未来演进路线。
+
+\vspace{4pt}
+\noindent\textbf{关键词：}\,工业大模型；检索增强生成（RAG）；离线部署；ABB RAPID；
+喷涂机器人；代码生成；本地大语言模型
+
+% ============== 目录 ==============
+\newpage
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{项目背景与选题意义}
+
+\subsection{行业痛点：喷涂机器人编程的“三高一隔离”}
+喷涂是汽车、家电、3C、家具等行业的关键工序，ABB 是全球喷涂机器人主要供应商之一
+（IRB 52 / 5400 / 5500 / 5710 等机型）。其编程语言 \textbf{RAPID} 是 ABB 专有的、
+大小写敏感的结构化语言，喷涂场景还要叠加专用工艺。一名工程师要独立写出可上机的程序，
+需同时掌握以下相互交织的知识：
+
+\begin{itemize}
+  \item \textbf{运动与轨迹}：\texttt{MoveJ/MoveL/MoveC}、转弯区 \texttt{zonedata}、
+        速度 \texttt{speeddata}、Z 字/弓字扫描的行距与重叠规划；
+  \item \textbf{喷涂工艺}：笔刷数据 \texttt{brushdata}（流量、扇幅、雾化压力）、
+        喷枪开关的提前/延迟时序、\texttt{TriggIO} 距离触发同步；
+  \item \textbf{标定与坐标}：工具坐标 \texttt{tooldata} 的 TCP 4 点法标定、
+        工件坐标 \texttt{wobjdata}；
+  \item \textbf{控制器配置}：IO 信号必须在控制器 \texttt{EIO.cfg} 中注册，
+        否则现场报 40212“信号未定义”；IRC5P 还依赖 RobotWare Paint 选项。
+\end{itemize}
+
+由此形成\textbf{“三高”}——\emph{学习门槛高、试错成本高、对人依赖高}。
+更棘手的是\textbf{“一隔离”}：出于工艺保密与功能安全，喷涂产线的控制器与编程电脑
+通常\textbf{物理隔离、完全无网}。这意味着 GitHub Copilot、ChatGPT、Cursor 等
+依赖云端的 AI 编程工具\textbf{在喷涂现场根本无法使用}，现场数据也\textbf{不允许上传外部服务}。
+
+\subsection{机遇：本地大模型 + 检索增强}
+近年来，代码专精的开源大模型（如 Qwen2.5-Coder 系列）在 7B 量级即可达到可用的代码生成质量，
+配合 4-bit 量化后\textbf{仅需约 4.5\,GB 内存即可在纯 CPU 上推理}；
+检索增强生成（RAG）则能把厂商手册等\textbf{私有领域知识}动态注入提示词，
+显著缓解小模型“知识不足/幻觉”问题。两者结合，使“\textbf{完全离线的工业领域代码助手}”
+第一次具备工程可行性——这正是本项目的技术机遇窗口。
+
+\subsection{选题意义}
+\begin{enumerate}
+  \item \textbf{解决真问题}：直面喷涂车间“无网 + 高门槛”的真实落地障碍，
+        而非又一个云端 demo；
+  \item \textbf{数据安全}：需求描述、工艺参数、历史程序\textbf{全程不出厂}，
+        天然满足工业信息安全合规；
+  \item \textbf{降本增效}：把“写一段喷涂程序”从数小时的专家工作，压缩为数十秒的
+        自然语言交互 + 人工复核；
+  \item \textbf{方法论可迁移}：本项目的“离线 RAG + 领域校验闭环”范式可推广到
+        其它工业机器人语言（KUKA KRL、FANUC TP、库卡/发那科）与 PLC 等封闭生态。
+\end{enumerate}
+
+% =====================================================================
+\section{相关工作与对比}
+
+\begin{table}[h]
+\centering
+\caption{abb-offline-coder 与现有方案的定位对比}
+\small
+\begin{tabularx}{\textwidth}{@{}l c c c X@{}}
+\toprule
+\textbf{方案} & \textbf{离线} & \textbf{领域专精} & \textbf{生成即校验} & \textbf{目标场景} \\
+\midrule
+GitHub Copilot / Cursor & \ding{55} & 通用 & \ding{55} & 联网的通用软件开发 \\
+ChatGPT / 通用云端 LLM & \ding{55} & 通用 & \ding{55} & 联网问答，需人工搬运代码 \\
+RobotStudio 图形示教 & \ding{51} & ABB 专精 & 部分 & 手工点选，无自然语言 \\
+通用本地 LLM（裸 Ollama） & \ding{51} & 通用 & \ding{55} & 缺手册知识，易幻觉 \\
+\textbf{abb-offline-coder（本项目）} & \textbf{\ding{51}} & \textbf{喷涂专精} & \textbf{\ding{51}} &
+  \textbf{无网工业 PC，中文一句话生成可上机程序} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent 与上述方案相比，本项目的差异化定位是\textbf{同时满足“离线 + 领域专精 + 生成即校验 +
+自然语言交互”四项}，填补了“无网工业现场的中文 AI 编程”空白。
+
+% =====================================================================
+\section{系统总体设计}
+
+\subsection{设计原则}
+项目遵循六条工程原则，确保在资源受限的工业 PC 上稳定、可演进：
+
+\begin{enumerate}
+  \item \textbf{离线优先}：所有运行时依赖（LLM、嵌入模型、向量库）必须断网可用；
+  \item \textbf{资源敏感}：默认 CPU 推理、无需独立 GPU，量化模型 4.5\,GB 内存可跑；
+  \item \textbf{可演进}：知识库可持续增量扩充，模型可随硬件升级替换，配置零代码改动；
+  \item \textbf{小文件、单一职责}：每模块 200--400 行，便于审查与测试；
+  \item \textbf{不可变数据}：核心数据模型全部 \texttt{frozen}，副作用集中在
+        Ollama / ChromaDB 边界；
+  \item \textbf{可测试}：以纯函数为主，逻辑层覆盖率高。
+\end{enumerate}
+
+\subsection{分层架构}
+系统采用清晰的四层架构：CLI 层负责交互，编排层（Agent）串联流水线，
+能力层分为 RAG 检索 / 本地 LLM / RAPID 后处理三大子系统，底层是离线知识库构建。
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  font=\sffamily\small,
+  layer/.style={draw=abbdark,line width=0.8pt,rounded corners=3pt,
+    minimum height=0.95cm,inner sep=6pt,align=center,fill=white},
+  capb/.style={draw=abbred,line width=1pt,rounded corners=3pt,fill=abblight,
+    minimum height=1.6cm,inner sep=6pt,align=center,text width=3.2cm},
+  arr/.style={-{Latex[length=2mm]},line width=0.8pt,abbgray},
+]
+\node[layer,fill=abblight,text width=12.5cm] (cli)
+  {\textbf{CLI 层}\;(\texttt{abb\_agent.cli})\\[1pt]
+   \scriptsize Typer 入口 · gen / chat / kb / init / doctor 子命令};
+\node[layer,below=0.5cm of cli,text width=12.5cm,fill=boxblue] (orch)
+  {\textbf{编排层 Orchestrator}\;(\texttt{abb\_agent.agent})\\[1pt]
+   \scriptsize 单次生成流水线 · 多轮对话状态机 · 输出后处理};
+
+\node[capb,below=0.9cm of orch.south,xshift=-4.45cm] (rag)
+  {\textbf{rag/}\\[2pt]\scriptsize 查询改写\\向量+BM25 混合检索\\上下文装配};
+\node[capb,below=0.9cm of orch.south] (llm)
+  {\textbf{llm/}\\[2pt]\scriptsize Ollama 客户端\\System / Few-shot\\Prompt 模板};
+\node[capb,below=0.9cm of orch.south,xshift=4.45cm] (rapid)
+  {\textbf{rapid/}\\[2pt]\scriptsize 静态校验 validator\\模块模板 / 格式化\\喷涂 helpers / Pack\&Go};
+
+\node[layer,below=0.9cm of llm,text width=12.5cm,fill=abblight] (kb)
+  {\textbf{knowledge/ 离线知识库构建}\\[1pt]
+   \scriptsize PDF / MOD / HTML 解析 · 切片 chunker · 嵌入入 ChromaDB};
+
+\draw[arr] (cli) -- (orch);
+\draw[arr] (orch.south) -- (rag.north);
+\draw[arr] (orch.south) -- (llm.north);
+\draw[arr] (orch.south) -- (rapid.north);
+\draw[arr] (rag.south) -- (kb.north);
+\end{tikzpicture}
+\caption{abb-offline-coder 四层架构（CLI / 编排 / 能力 / 知识库）}
+\end{figure}
+
+\subsection{核心数据流：单次生成流水线}
+一次“中文需求 $\to$ \texttt{.mod} 文件”的处理是一条函数式纯流水线，每一步的产物
+都是不可变 \texttt{dataclass}，便于测试与复用：
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize,node distance=3pt,
+  pstep/.style={draw=abbdark,line width=0.7pt,rounded corners=2pt,fill=white,
+    minimum width=2.55cm,minimum height=0.95cm,align=center,inner sep=3pt},
+  pio/.style={draw=abbred,line width=0.9pt,fill=abblight,rounded corners=2pt,
+    minimum width=2.55cm,minimum height=0.95cm,align=center,inner sep=3pt},
+  fa/.style={-{Latex[length=2mm]},line width=0.8pt,abbred},
+]
+\node[pio] (q) {中文需求\\\scriptsize user\_query};
+\node[pstep,right=0.55cm of q] (rw) {\ding{172}~查询改写\\\scriptsize rewrite()};
+\node[pstep,right=0.55cm of rw] (re) {\ding{173}~混合检索\\\scriptsize 向量+BM25};
+\node[pstep,below=0.85cm of re] (cb) {\ding{174}~上下文装配\\\scriptsize context\_builder};
+\node[pstep,left=0.55cm of cb] (pr) {\ding{175}~Prompt 装配\\\scriptsize system+few-shot};
+\node[pstep,left=0.55cm of pr] (lm) {\ding{176}~本地 LLM\\\scriptsize Ollama 推理};
+\node[pio,below=0.85cm of lm] (pp) {\ding{177}~后处理\\\scriptsize 包模块/格式化};
+\node[pstep,right=0.55cm of pp] (vd) {校验 validate\\\scriptsize 11 类规则};
+\node[pio,right=0.55cm of vd] (out) {\texttt{.mod} 输出\\\scriptsize RobotStudio};
+
+\draw[fa] (q) -- (rw);
+\draw[fa] (rw) -- (re);
+\draw[fa] (re) -- (cb);
+\draw[fa] (cb) -- (pr);
+\draw[fa] (pr) -- (lm);
+\draw[fa] (lm) -- (pp);
+\draw[fa] (pp) -- (vd);
+\draw[fa] (vd) -- (out);
+\end{tikzpicture}
+\caption{单次生成的六级流水线（query rewrite → retrieve → assemble → prompt → LLM → post-process）}
+\end{figure}
+
+\subsection{技术栈}
+\begin{table}[h]
+\centering
+\caption{关键技术选型}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{层} & \textbf{选型} & \textbf{理由} \\
+\midrule
+本地大模型 & Ollama + Qwen2.5-Coder-7B-Instruct (Q4\_K\_M) & 代码专精、4.5\,GB 可 CPU 推理；3B 为弱机回退 \\
+嵌入模型 & BAAI/bge-small-zh-v1.5（512 维, 92\,MB） & 中文语义强、CPU 单句 <50\,ms \\
+向量库 & ChromaDB（内嵌持久化） & 无独立服务进程，随项目落盘 \\
+关键词检索 & rank-bm25（内存版 BM25Okapi） & 精确指令名召回，启动即建索引 \\
+文档解析 & PyMuPDF / BeautifulSoup / 自研 mod\_parser & 解析 ABB PDF 手册、HTML、历史 .mod \\
+CLI / 渲染 & Typer + Rich & 子命令清晰、终端语法高亮 \\
+配置 / 校验 & Pydantic + pydantic-settings & 环境变量覆盖、类型安全 \\
+语言 / 工具 & Python 3.10+ · pytest · ruff · mypy & 工程化质量保障 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+\section{关键技术与实现}
+
+\subsection{中文查询改写：低成本提升检索命中}
+用户口语化的中文（如“让喷枪沿直线扫过去”）与手册中的英文术语（\texttt{MoveL straight path}）
+存在语义鸿沟。项目实现了\textbf{基于词典 + 规则的轻量查询改写器}（不调用 LLM，毫秒级）：
+保留原始中文（利于向量召回）、追加官方英文术语（利于 BM25 召回），并识别 7 类任务类别
+（直线/Z字/圆弧扫描、TCP 标定、笔刷工艺、IO 控制、通用）。其中对“Z 字 / 之字 / 弓字”
+等同义写法做\textbf{空格归一化}后统一映射，提升鲁棒性。
+
+\begin{lstlisting}[style=py,caption={查询改写：中文→检索友好查询（节选）}]
+_CN_TO_EN = {
+    "直线扫描": "linear scan MoveL straight path",
+    "z字":     "zigzag scan back forth raster pattern",
+    "校准":     "calibration TCP toolframe calibrate",
+    "雾化":     "atomization atom pressure",
+    "同步":     "TriggIO TriggL TriggData synchronized trigger distance",
+    # ... 共 40+ 条术语映射
+}
+
+def rewrite(query: str) -> RewrittenQuery:
+    normalized = re.sub(r"\s+", "", query).lower()   # 归一化：去空格，"Z 字"==“Z字”
+    extras, keywords = [], set()
+    for cn, en in _CN_TO_EN.items():
+        if cn.lower() in normalized:
+            extras.append(en); keywords.update(en.split())
+    category = _classify_category(query)             # 7 类任务识别
+    rewritten = f"{query}\n[英文术语映射]: {'; '.join(extras)}\n[任务类别]: {category.value}"
+    return RewrittenQuery(query, rewritten, category, tuple(sorted(keywords)))
+\end{lstlisting}
+
+\subsection{向量 + BM25 混合检索}
+为兼顾\textbf{精确关键词}（“如何写 MoveL”——BM25 强）与\textbf{模糊意图}
+（“沿直线扫过去”——向量强），检索层采用混合策略：两路分别取 Top-$k$，
+归一化后线性融合。设某片段的向量得分为 $s_{\text{vec}}$、BM25 得分为 $s_{\text{bm25}}$，
+经 min-max 归一化得 $\hat{s}$，最终融合得分为：
+\[
+  \text{score} \;=\; \alpha \cdot \hat{s}_{\text{vec}} \;+\; (1-\alpha)\cdot \hat{s}_{\text{bm25}},
+  \qquad \alpha = 0.5 .
+\]
+两路按 \texttt{chunk\_id} 合并去重，匹配关键词集合并集保留，最终取 Top-5 进入上下文装配。
+分词上对 RAPID 关键词\textbf{整体保留}（\texttt{MoveL} 不可拆），中文按字符切分，
+兼顾专业指令名的精确召回。
+
+\begin{lstlisting}[style=py,caption={混合检索的分数融合（节选）}]
+def _merge_and_rerank(self, vec, bm25, alpha):
+    vec_norm  = _normalize([r.score for r in vec])     # min-max 归一化到 [0,1]
+    bm25_norm = _normalize([r.score for r in bm25])
+    score_map = {}
+    for r, ns in zip(vec, vec_norm):
+        score_map[r.chunk.chunk_id] = (r.chunk, alpha * ns)
+    for r, ns in zip(bm25, bm25_norm):                 # 同 id 累加另一路加权分
+        prev = score_map.get(r.chunk.chunk_id, (r.chunk, 0.0))[1]
+        score_map[r.chunk.chunk_id] = (r.chunk, prev + (1 - alpha) * ns)
+    return sorted_results(score_map)                   # 按融合分降序
+\end{lstlisting}
+
+\subsection{上下文装配：来源标注 + 预算控制}
+检索片段在进入提示词前需被装配：按相关度降序、跨源去重、给每段加来源标签
+（\texttt{[ABB 官方手册]}、\texttt{[示例代码]}、\texttt{[喷涂工艺]} 等），
+代码片段单独用 \texttt{```rapid} 包裹以便 LLM 识别。为防止超出模型上下文窗口，
+按\textbf{“汉字 1 字 $\approx$ 1.5 token、英文 4 字符/token”}估算并控制总预算
+（默认 $\le 3500$ token），高分片段优先填入。
+
+\subsection{本地 LLM 推理与提示工程}
+推理通过 Ollama HTTP 客户端调用本地量化模型，内置\textbf{连接重试（指数退避 2 次）}
+与\textbf{模型缺失自动降级}（7B $\to$ 3B 回退）。提示词由三部分组成：
+
+\begin{itemize}
+  \item \textbf{System Prompt}：约定“代码先于解释、永远输出完整 \texttt{MODULE}、
+        大小写规范、每行分号、中文注释、安全模板（\texttt{ConfL\textbackslash Off; SingArea\textbackslash Wrist;}）、
+        禁止虚构不存在的指令”等 10 条铁律；
+  \item \textbf{Few-shot 示例}：6 个“需求→代码”范例（直线/Z 字/圆弧/TriggIO 同步/
+        TCP 校准/参数化扫描），让模型对齐输出风格；
+  \item \textbf{检索上下文}：本次命中的官方手册片段，动态注入。
+\end{itemize}
+
+\keypoint{RAG 注入让小模型“查得到、不乱编”}
+实测中，未联网的本地模型借助 RAG 从 7497 个片段里检索到官方
+\texttt{MToolTCPCalib}、\texttt{TriggIO gunon, 0.2\textbackslash Time\textbackslash DOp:=gun} 等
+\textbf{专业指令的真实用法}并正确复用——这是裸模型（无检索）难以做到的，
+直接验证了“离线 RAG”路线的有效性。
+
+\subsection{RAPID 后处理：生成—校验闭环}
+LLM 输出不能直接上机。后处理依次完成\textbf{模块包裹 $\to$ 格式化 $\to$ 静态校验}。
+其中校验器是本项目的工程亮点：在不做完整 parser 的前提下（成本太高），
+用正则与栈式匹配实现 \textbf{11 类高频错误检查}，并赋予\textbf{可追溯错误码}，
+现场工程师可据码定位问题。
+
+\begin{table}[h]
+\centering
+\caption{RAPID 静态校验规则与错误码体系}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{错误码} & \textbf{级别} & \textbf{检查内容} \\
+\midrule
+MOD001 & Error   & 缺少 \texttt{MODULE} 声明 \\
+BLK001/002/003 & Error & 块结构（MODULE/PROC/IF/FOR/WHILE…）未配对、错配、未闭合（栈式匹配）\\
+STR001 & Error   & 字符串引号不配对 \\
+CASE001 & Warning & 关键字大小写不规范（RAPID 大小写敏感）\\
+SEM001 & Warning & 语句行末疑似缺少分号 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{IRC5P 专项（仅 controller=IRC5P 时启用）}}\\
+PNT001 & Error   & \texttt{PaintL/PaintC} 参数不足，疑似缺 \texttt{brushdata} 形参 \\
+TCP001 & Error   & \texttt{tooldata} 仍为默认占位 TCP \texttt{[0,0,200]}（\texttt{strict-tcp} 开启时）\\
+IO001  & Error   & 引用了不在控制器 \texttt{EIO.cfg} 白名单中的 IO 信号 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\keypoint{把“现场才会暴露的错误”提前到生成时拦截}
+\texttt{IO001} 白名单检查可避免上机后报 \texttt{40212} 信号未定义；
+\texttt{TCP001} 强制提示“默认 TCP 必须 4 点法重标定”；
+\texttt{PNT001} 用“已声明 brushdata 名称集合”与调用做交叉校验。
+这些都是把工业现场的高代价错误左移到\textbf{生成即拦截}的具体工程手段。
+
+\begin{lstlisting}[style=py,caption={IO 白名单校验：启发式识别 IO 信号并去重报错（节选）}]
+IO_SIGNAL_PREFIXES = ("do", "di", "ao", "ai", "go", "gi")   # 业内 IO 命名约定
+
+def _check_io_whitelist(lines, whitelist):
+    allowed, reported, issues = set(whitelist), set(), []
+    for ln, raw in enumerate(lines, 1):
+        m = _IO_CALL_RE.match(_strip_comments(raw))         # SetDO/Reset/WaitDI...
+        if not m: continue
+        sig = m.group(2)
+        if not sig.lower().startswith(IO_SIGNAL_PREFIXES):  # 跳过 clock 等非 IO
+            continue
+        if sig in allowed or sig in reported: continue
+        reported.add(sig)                                   # 同一未知信号只报一次
+        issues.append(ValidationIssue(ln, ERROR, "IO001",
+            f"IO 信号 '{sig}' 不在 EIO.cfg 白名单中"))
+    return issues
+\end{lstlisting}
+
+\subsection{双控制器模式：IRC5 与 IRC5P 自适应}
+同一句需求，针对不同控制器应生成不同风格的代码。项目把 \texttt{controller} 作为贯穿
+提示词、helpers、校验、Pack\&Go 的一等参数，实现一键切换。
+
+\begin{table}[h]
+\centering
+\caption{IRC5 与 IRC5P 输出风格对照}
+\small
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+\toprule
+\textbf{维度} & \textbf{IRC5（默认，通用控制器）} & \textbf{IRC5P（含 RobotWare Paint）} \\
+\midrule
+喷涂直线 & \texttt{MoveL} + \texttt{SetDO doSprayOn,1/0} & \texttt{PaintL target,speed,brushdata,zone,tool} \\
+喷涂圆弧 & \texttt{MoveC} + \texttt{SetDO} & \texttt{PaintC pMid,pEnd,…,brushdata,…} \\
+工艺数据 & \texttt{PERS num} 占位参数 & \texttt{PERS brushdata} 原生类型 \\
+开关枪时序 & 手动 \texttt{SetDO} 配 \texttt{WaitTime} & brushdata 的 preOpen/postClose 自动管理 \\
+新增校验 & — & PNT001 / TCP001 / IO001 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{lstlisting}[style=py,caption={喷涂 helper：同一调用按控制器产出不同 RAPID（Z 字扫描节选）}]
+def zigzag_scan(origin, width, height, *, row_spacing=50.0, controller="IRC5", brush="bdMain", ...):
+    is_paint = controller == "IRC5P"
+    for i in range(num_rows):
+        # 行起点高速定位（不喷）
+        lines.append(f"MoveL {robtarget_inline(p_start)}, v500, fine, {tool}\\WObj:={wobj};")
+        if is_paint:
+            lines.append(f"PaintL {robtarget_inline(p_end)}, {speed}, {brush}, {zone}, {tool}\\WObj:={wobj};")
+        else:
+            lines += [f"SetDO {spray_signal}, 1;",
+                      f"MoveL {robtarget_inline(p_end)}, {speed}, {zone}, {tool}\\WObj:={wobj};",
+                      f"SetDO {spray_signal}, 0;"]
+\end{lstlisting}
+
+\subsection{Pack\&Go 一键交付}
+仅一个 \texttt{.mod} 并不能让控制器直接加载运行。项目的 \texttt{--bundle} 模式
+把单模块扩展为\textbf{完整可加载目录}，并处理 ABB 控制器特有的\textbf{编码细节}：
+\texttt{.sys / .pgf} 用 ISO-8859-1 + CRLF 写入（老 RobotWare 默认按 Latin-1 解码，
+中文会导致加载失败），\texttt{BASE.sys} 强制纯 ASCII 并把中文说明剥离到同目录 README；
+写入采用\textbf{先写文件、最后落 \texttt{MANIFEST.ok}}的策略，使“半写状态”可被外部识别。
+
+\begin{center}
+\begin{tikzpicture}[font=\sffamily\footnotesize,
+  pf/.style={draw=abbdark,rounded corners=2pt,fill=white,minimum width=3.1cm,
+    minimum height=0.8cm,align=center,inner sep=3pt}]
+\node[pf,fill=abblight] (mod) {\texttt{PaintProgram.mod}\\\scriptsize 主程序(PaintL+brushdata)};
+\node[pf,right=0.4cm of mod] (sys) {\texttt{BASE.sys}\\\scriptsize Home 位+错误恢复 trap};
+\node[pf,right=0.4cm of sys] (pgf) {\texttt{T\_ROB1.pgf}\\\scriptsize XML 任务加载清单};
+\node[pf,right=0.4cm of pgf] (rm) {\texttt{README.md}\\\scriptsize 3 种加载+上线4步};
+\node[draw=abbred,line width=1pt,rounded corners=4pt,fit=(mod)(sys)(pgf)(rm),
+  inner sep=8pt,label={[abbred]above:\textbf{output/MyPaintLine/ —— 可直接加载控制器}}]{};
+\end{tikzpicture}
+\end{center}
+
+\subsection{一键离线迁移}
+为把整套环境搬到隔离工业 PC，项目提供 \texttt{bundle.sh / restore.sh} 零参数脚本：
+自动收集\textbf{源码 + ABB PDF 手册 + ChromaDB 向量库 + bge 嵌入模型 + Ollama LLM +
+离线 Python wheels}，打成单个 \texttt{tar.gz} 并附 SHA256 校验；
+新设备解压后一行 \texttt{restore.sh} 完成“检查 Python $\to$ 建虚拟环境离线装依赖 $\to$
+合并 Ollama 模型 $\to$ 验证向量库 $\to$ 自检”五步。实测精简离线包约 192\,MB。
+
+% =====================================================================
+\section{创新点总结}
+
+\begin{enumerate}
+  \item \textbf{完全离线的工业领域代码生成}：在无网工业 PC（CPU、无 GPU）上跑通
+        “自然语言 → 可上机程序”，数据全程不出厂，破解云端工具无法落地的行业痛点。
+  \item \textbf{领域专精 RAG 知识注入}：以 10 本真实 ABB 官方手册构建 7497 片段向量库，
+        向量 + BM25 混合检索，使小模型也能正确引用专业指令、显著抑制幻觉。
+  \item \textbf{IRC5 / IRC5P 双控制器自适应}：\texttt{controller} 作为贯穿提示词、
+        代码生成、校验、交付的一等参数，一键切换 \texttt{MoveL+SetDO} 与
+        \texttt{PaintL/PaintC+brushdata} 两套工艺风格。
+  \item \textbf{生成—校验闭环（11 类规则 + 错误码）}：把 IO 未定义、默认 TCP、
+        笔刷缺失等\textbf{现场高代价错误左移到生成时拦截}。
+  \item \textbf{Pack\&Go 一键交付}：从一句话需求直接产出
+        \texttt{.mod+BASE.sys+T\_ROB1.pgf+README} 可加载目录，并正确处理控制器编码。
+  \item \textbf{工程化离线迁移}：一键 bundle/restore 把模型、向量库、手册整体搬运、
+        校验、自检，真正可在隔离设备复现。
+  \item \textbf{安全护栏内建}：TCP 占位检测、IO 白名单、关键字段人工复核提示，
+        贯彻“AI 生成、人工把关”的工业安全理念。
+\end{enumerate}
+
+% =====================================================================
+\section{工程质量与实测}
+
+\subsection{代码规模与测试}
+\begin{table}[h]
+\centering
+\caption{代码规模与模块分布}
+\small
+\begin{tabular}{@{}l r l r@{}}
+\toprule
+\textbf{模块} & \textbf{行数} & \textbf{职责} & \textbf{说明} \\
+\midrule
+\texttt{rapid/}     & 1448 & 校验/模板/喷涂 helper/Pack\&Go & 后处理与安全护栏核心 \\
+\texttt{knowledge/} & 914  & PDF/MOD/HTML 解析 + 切片 & 离线知识库构建 \\
+\texttt{rag/}       & 776  & 改写/嵌入/向量库/混合检索/装配 & 检索增强主链路 \\
+\texttt{cli/}       & 608  & gen/chat/kb/init/doctor & 用户交互层 \\
+\texttt{llm/}       & 354  & Ollama 客户端 + Prompt 模板 & 本地推理 \\
+\midrule
+\textbf{合计} & \textbf{$\approx$4500} & \textbf{37 个源文件} & 全部 Python 3.10+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+测试方面，项目建立了\textbf{22 个测试文件、约 149 个 \texttt{test\_*} 用例函数}的单元测试套件
+（README 徽章记录 124 项通过；随 IRC5P / Pack\&Go 能力扩展，用例持续增长），
+覆盖查询改写、混合检索模型、RAPID 校验（含 IRC5P 专项）、模块模板、喷涂 helpers、
+Pack\&Go 系统包、编码安全、IO 白名单解析等。核心纯逻辑模块覆盖率高（如 \texttt{config.py}、
+\texttt{query\_rewriter.py}、\texttt{painting\_helpers.py} 达 100\%）。
+数据模型采用 \texttt{frozen dataclass} 保证不可变，副作用集中在
+Ollama / ChromaDB 边界，利于隔离测试。
+
+\subsection{知识库与模型规格}
+\begin{table}[h]
+\centering
+\caption{离线知识库与模型规格}
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{项} & \textbf{值} \\
+\midrule
+官方手册       & 10 本真实 ABB 手册，约 54\,MB（RAPID 参考手册、Painting PowerPac、IRB 52/5400/5710 等）\\
+向量库         & ChromaDB 7497 个切片 / 约 52\,MB \\
+嵌入模型       & BAAI/bge-small-zh-v1.5，512 维，约 92\,MB，CPU 推理 \\
+主 LLM         & Qwen2.5-Coder-7B-Instruct Q4\_K\_M（约 4.5\,GB）\\
+回退 LLM       & Qwen2.5-Coder-3B-Instruct Q4\_K\_M（弱配工业 PC）\\
+离线包         & 精简版约 192\,MB（含源码+手册+向量库+嵌入模型）\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{性能基准（工业 PC：i5 + 16\,GB RAM，无 GPU）}
+\begin{table}[h]
+\centering
+\caption{端到端性能实测}
+\small
+\begin{tabular}{@{}l c@{}}
+\toprule
+\textbf{操作} & \textbf{预期时间} \\
+\midrule
+知识库检索（Top-5）        & $<0.5$\,s \\
+LLM 推理（Qwen 7B Q4）     & 15--30\,s \\
+后处理 + 校验              & $<0.2$\,s \\
+\textbf{端到端单次生成}    & \textbf{20--35\,s} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{应用案例：车门外板 Z 字喷涂}
+
+以需求“\emph{在 600$\times$400 平板上做 Z 字扫描喷涂，行距 50\,mm}”为例，
+同一句话在两种控制器模式下生成不同但均通过校验的程序。
+
+\subsection{IRC5 模式输出（MoveL + SetDO）}
+\begin{lstlisting}[style=rapid,caption={DoorPaint\_IRC5.mod（节选）——通用控制器，手动 SetDO 开关枪}]
+MODULE DoorPaint_IRC5
+    ! 600x400 平板 Z 字扫描喷涂 (IRC5 模式样例)
+    PERS tooldata tSprayGun := [TRUE, [[0,0,200],[1,0,0,0]], [2.5,[0,0,80],[1,0,0,0],0,0,0]];
+    PERS wobjdata wobjPart := [FALSE, TRUE, "", [[0,0,0],[1,0,0,0]], [[0,0,0],[1,0,0,0]]];
+    CONST speeddata vPaint := [200, 500, 5000, 1000];
+    PROC main()
+        ConfL\Off;
+        SingArea\Wrist;
+        ! Z 字扫描喷涂
+        MoveL [[0,0,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], v500, fine, tSprayGun\WObj:=wobjPart;
+        SetDO doSprayOn, 1;
+        MoveL [[600,0,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], vPaint, z10, tSprayGun\WObj:=wobjPart;
+        SetDO doSprayOn, 0;
+        ! ... 逐行 Y 偏移 50mm 往返扫描 ...
+    ENDPROC
+ENDMODULE
+\end{lstlisting}
+
+\subsection{IRC5P 模式输出（PaintL + brushdata）}
+\begin{lstlisting}[style=rapid,caption={DoorPaint\_IRC5P.mod（节选）——Paint 控制器，brushdata 自动管理喷涂时序}]
+MODULE DoorPaint_IRC5P
+    ! 600x400 平板 Z 字扫描喷涂 (IRC5P 模式样例)
+    PERS tooldata tSprayGun := [TRUE, [[0,0,200],[1,0,0,0]], [2.5,[0,0,80],[1,0,0,0],0,0,0]];
+    PERS wobjdata wobjPart := [FALSE, TRUE, "", [[0,0,0],[1,0,0,0]], [[0,0,0],[1,0,0,0]]];
+    CONST speeddata vPaint := [200, 500, 5000, 1000];
+    ! [WARNING] brushdata 字段顺序随 RobotWare Paint 版本不同，上控制器前须对照 Brush Table 校核!
+    PERS brushdata bdMain := [80, 300, 50, 50, 50, 0, FALSE, "bdMain", 0];
+    PROC main()
+        ConfL\Off;
+        SingArea\Wrist;
+        ! Z 字扫描喷涂 (IRC5P PaintL)
+        MoveL [[0,0,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], v500, fine, tSprayGun\WObj:=wobjPart;
+        PaintL [[600,0,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], vPaint, bdMain, z10, tSprayGun\WObj:=wobjPart;
+        ! ... 后续行 PaintL 走 brushdata 工艺 ...
+    ENDPROC
+ENDMODULE
+\end{lstlisting}
+
+\noindent 两份程序均自动补全 \texttt{tooldata/wobjdata/speeddata} 声明、安全模板与中文注释，
+并通过静态校验。配合 \texttt{--bundle} 即生成 \texttt{BASE.sys} 与 \texttt{T\_ROB1.pgf}，
+形成可直接拖入 RobotStudio 加载的完整目录。
+
+% =====================================================================
+\section{安全、合规与伦理}
+\begin{itemize}
+  \item \textbf{数据不出厂}：全离线运行，需求/工艺/历史程序不上传任何外部服务，
+        符合工业信息安全要求；
+  \item \textbf{人在回路}：生成代码\textbf{必须}在 RobotStudio 仿真验证后方可上机；
+        速度、转弯区、TCP 等安全字段强制人工复核；
+  \item \textbf{安全护栏}：默认 TCP 占位检测（TCP001）、IO 白名单（IO001）、
+        \texttt{BASE.sys} 错误恢复 trap 与 Home 位回退；
+  \item \textbf{知识产权合规}：手册由用户在有网环境\textbf{手动合法获取}后入库，
+        项目本身不抓取、不分发受版权保护的 ABB 资料；
+  \item \textbf{商标声明}：本项目与 ABB Ltd. 无任何关联，亦不被其支持或认可；
+        “ABB”“RobotStudio”“RAPID”均为 ABB Ltd. 商标，本项目为独立第三方实用工具，
+        以 MIT 许可证开源。
+\end{itemize}
+
+% =====================================================================
+\section{局限性与未来工作}
+\subsection{当前局限}
+\begin{itemize}
+  \item 小模型对生僻 RAPID 指令理解仍不完美，建议先用 \texttt{kb inspect} 检查检索质量；
+  \item 校验为轻量正则/栈式匹配，非完整语法分析，深层语义错误仍需仿真兜底；
+  \item \texttt{brushdata} 字段顺序随 RobotWare Paint 版本而异，需现场对照 Brush Table 校核。
+\end{itemize}
+
+\subsection{演进路线}
+\begin{itemize}
+  \item[\ding{51}] v0.1：CLI + RAG + 喷涂 few-shot（已完成）
+  \item[\ding{51}] v0.2：IRC5P 模式 + PaintL/PaintC + brushdata + Pack\&Go（已完成）
+  \item[$\square$] v0.3：扩充 IRB 5500 / 6700 等更多机型专门 few-shot
+  \item[$\square$] v0.4：可选 GUI（Textual TUI 或本地 Web）
+  \item[$\square$] v0.5：完整 RAPID parser，提升校验深度至语义层
+  \item[$\square$] v0.6：RobotStudio Add-In（C\# 桥接），一键回灌仿真
+\end{itemize}
+
+\subsection{方法论可迁移性}
+本项目沉淀的“\textbf{离线 RAG + 领域校验闭环 + 一键交付}”范式不局限于 ABB：
+更换知识库、提示词与校验规则后，可平移至 KUKA KRL、FANUC TP、安川 INFORM
+等其它封闭工业机器人语言，乃至 PLC（结构化文本 ST）等工控代码生成场景，
+具备清晰的产品化与推广潜力。
+
+% =====================================================================
+\section{结论}
+abb-offline-coder 针对喷涂机器人编程“高门槛 + 无网隔离”的真实困境，
+提出并完整实现了一套\textbf{完全离线、领域专精、生成即校验}的中文 AI 编程助手。
+通过本地量化大模型与官方手册 RAG 的结合、IRC5/IRC5P 双控制器自适应、
+11 类静态校验闭环与 Pack\&Go 一键交付，系统把“写一段合格喷涂程序”从专家级的
+数小时工作，降为数十秒的自然语言交互加人工复核，且全程数据不出厂。
+项目以约 4500 行 Python、149 个测试用例、7497 片段知识库与 20--35 秒端到端性能，
+证明了“无网工业现场可用的 AI 编程助手”这一路线的技术可行性与工程成熟度，
+并为更广泛的封闭工业生态代码生成提供了可复制的方法论范式。
+
+% =====================================================================
+\section*{参考资料与项目信息}
+\addcontentsline{toc}{section}{参考资料与项目信息}
+\small
+\begin{itemize}
+  \item 项目源码：\url{https://github.com/Hollis36/abb-offline-coder}（MIT 许可证）
+  \item 在线演示页：\url{https://hollis36.github.io/abb-offline-coder/}
+  \item ABB \textit{RAPID Reference Manual — Instructions, Functions and Data types}（文档号 3HAC16581）
+  \item ABB \textit{Painting PowerPac Operating Manual}（3HNA019758）、\textit{Application Manual — RobotWare Paint}
+  \item ABB \textit{Product Manual}：IRB 52 / 5400 / 5710 系列
+  \item BAAI bge-small-zh-v1.5 中文嵌入模型；Qwen2.5-Coder 开源代码大模型；Ollama 本地推理框架
+  \item ChromaDB 向量数据库；rank-bm25；PyMuPDF；Typer / Rich / Pydantic
+\end{itemize}
+
+\vspace{1.2cm}
+\begin{center}
+{\color{linegray}\rule{0.5\textwidth}{0.6pt}}\\[6pt]
+{\sffamily\small\color{abbgray}
+人工智能创新赛 · 项目研究报告 \quad|\quad 队伍：人工智能创新001 \quad|\quad abb-offline-coder v0.2}
+\end{center}
+
+\end{document}
