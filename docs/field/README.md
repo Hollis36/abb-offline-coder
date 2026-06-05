@@ -35,17 +35,18 @@ git push origin claude/dazzling-noether-AHbRH
 
 | 角色 | 选用内容 | 拟配中文图注 |
 |------|----------|--------------|
-| 现场全景 | 玻璃喷房 + 防护套机器人 + 黄色喷枪 + 绿色格栅工装台 | 真实喷涂机器人工作站（玻璃隔离喷房） |
-| 机器人作业 | 机器人持枪对准工件、喷枪朝下特写 | 机器人按程序对工件喷涂 |
-| 喷涂成品 | 浅绿色光泽漆面平板工件 | 喷涂成品（漆面均匀、光泽一致） |
-| 质量检测 | 手持涂层测厚仪测量，读数 61.3 μm（另有 45.9 μm） | 膜厚检测：多点测量 45.9–61.3 μm |
+| 现场全景 | 玻璃喷房 + 防护套机器人 + 黄色喷枪 + 绿色格栅工装台 | 真实喷涂机器人工作站（物理隔离、无网玻璃喷房） |
+| 机器人作业 | 机器人持枪对准工件、喷枪朝下特写 | 机器人执行本工具生成的 RAPID 程序喷涂工件 |
+| 喷涂成品 | 浅绿色光泽漆面平板工件 | 本工具生成程序喷涂的成品（漆面均匀、光泽一致） |
+| 质量检测 | 手持涂层测厚仪测量，读数 61.3 μm（另有 45.9 μm） | 成品膜厚检测：多点 45.9–61.3 μm |
 
 > 若你想要不同的取舍（比如想突出某张），推送后告诉我即可，我按你的偏好调整。
 
-## 四、真实性措辞（重要 · 诚信）
+## 四、真实性措辞（已确认）
 
-默认我会以\*\*「项目面向的真实应用场景 / 落地目标场景」\*\*措辞，**不**声称"图中机器人正在运行本工具生成的代码"。
-若这些照片确为**本工具生成的 RAPID 程序在该工作站实际运行**所摄，请明确告知，我再把图注强化为"本工具生成程序的现场运行实景"——这是一个不能凭空声称的事实点。
+队伍已确认：这些照片**确为本工具生成的 RAPID 程序在该工作站实际运行 / 喷涂成品质检**所摄。
+因此图注按\*\*「本工具生成程序的现场运行实景」\*\*口径表述（见上表），并在幻灯落一句：
+「图为本工具生成的 RAPID 喷涂程序在真实（物理隔离、无网）喷涂车间的现场运行与成品质检。」
 
 ## 五、我拿到文件后会做的处理
 
@@ -61,18 +62,18 @@ git push origin claude/dazzling-noether-AHbRH
 
 ```latex
 % 需在 slides.tex 序言加： \graphicspath{{../docs/screenshots/}{../docs/field/}}
-\begin{frame}{真实应用现场：喷涂机器人落地场景}
+\begin{frame}{真实应用现场：本工具生成程序的现场运行}
 \begin{columns}[c]
   \begin{column}{0.25\textwidth}\centering
-    \includegraphics[height=4.3cm]{field-cell.jpg}\\{\scriptsize 玻璃隔离喷房 + 机器人}\end{column}
+    \includegraphics[height=4.3cm]{field-cell.jpg}\\{\scriptsize 物理隔离、无网玻璃喷房}\end{column}
   \begin{column}{0.25\textwidth}\centering
-    \includegraphics[height=4.3cm]{field-robot.jpg}\\{\scriptsize 机器人按程序喷涂工件}\end{column}
+    \includegraphics[height=4.3cm]{field-robot.jpg}\\{\scriptsize 机器人执行本工具生成的程序喷涂}\end{column}
   \begin{column}{0.25\textwidth}\centering
     \includegraphics[height=4.3cm]{field-part.jpg}\\{\scriptsize 喷涂成品（漆面均匀）}\end{column}
   \begin{column}{0.25\textwidth}\centering
-    \includegraphics[height=4.3cm]{field-qc.jpg}\\{\scriptsize 膜厚检测 45.9–61.3\,$\mu$m}\end{column}
+    \includegraphics[height=4.3cm]{field-qc.jpg}\\{\scriptsize 成品膜厚检测 45.9–61.3\,$\mu$m}\end{column}
 \end{columns}
 \vspace{4pt}
-{\footnotesize 现场为物理隔离、无网的喷涂车间——正是本工具「完全离线」定位的真实落地场景。}
+{\footnotesize 图为本工具生成的 RAPID 喷涂程序在真实（物理隔离、无网）喷涂车间的现场运行与成品质检——印证「完全离线」定位真实落地。}
 \end{frame}
 ```
