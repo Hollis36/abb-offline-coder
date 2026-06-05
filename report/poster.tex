@@ -76,17 +76,17 @@
   \hd{行业痛点：三高一隔离}\\[2pt]
   $\bullet$ RAPID 专有语言，喷涂还叠加笔刷/时序/标定/IO 配置——\textbf{门槛高、试错贵、依赖专家}\\
   $\bullet$ 喷涂车间多为\textbf{物理隔离、完全无网}——云端 AI 编程工具（Copilot/ChatGPT）\textbf{无法落地}，现场数据\textbf{不能外传}};
-\node[panel,text width=8.0cm,anchor=north west,fill=abblight] at (0.1,\cyA-2.55) (p2){%
+\node[panel,text width=8.0cm,anchor=north west,fill=abblight] at ([yshift=-7pt]p1.south west) (p2){%
   \hd{解决方案与定位}\\[2pt]
   本地量化大模型 + 官方手册 RAG，在工业 PC（CPU、无 GPU）上把\textbf{一句中文}变成
   符合 ABB 规范、可导入 RobotStudio 的 \textbf{.mod} 程序；\textbf{数据全程不出厂}。};
-\node[panel,text width=8.0cm,anchor=north west] at (0.1,\cyA-5.0) (p3){%
+\node[panel,text width=8.0cm,anchor=north west] at ([yshift=-7pt]p2.south west) (p3){%
   \hd{七大创新点}\\[2pt]
   \textbf{1.} 完全离线工业代码生成\quad\textbf{2.} 官方手册 RAG 抑幻觉\\
   \textbf{3.} IRC5/IRC5P 双控制器自适应\quad\textbf{4.} 生成—校验闭环\\
   \textbf{5.} Pack\&Go 一键交付\quad\textbf{6.} 一键离线迁移\quad\textbf{7.} 安全护栏内建};
 % 左栏底部：真实落地实景（现场实拍）
-\node[panel,text width=8.0cm,anchor=north west,fill=white] at (0.1,5.95) (pimg){%
+\node[panel,text width=8.0cm,anchor=north west,fill=white] at ([yshift=-7pt]p3.south west) (pimg){%
   \hd{真实落地实景（现场实拍）}\\[3pt]
   \centering
   \includegraphics[height=2.6cm]{field-robot.jpg}\hspace{3pt}\includegraphics[height=2.6cm]{field-qc.jpg}\\[2pt]
@@ -107,14 +107,14 @@
 \draw[arr] (aR) -- (aKb);
 \end{scope}
 \begin{scope}[on background layer]
-\node[panel,fit=(aTitle)(aCli)(aOrc)(aR)(aL)(aP)(aKb),inner sep=8pt]{};
+\node[panel,fit=(aTitle)(aCli)(aOrc)(aR)(aL)(aP)(aKb),inner sep=8pt] (march){};
 \end{scope}
-\node[panel,text width=8.0cm,anchor=north west] at (9.6,\cyA-4.65) (m2){%
+\node[panel,text width=8.0cm,anchor=north west] at ([yshift=-8pt]march.south west) (m2){%
   \hd{IRC5\, vs\, IRC5P（同一句话，两种工艺）}\\[3pt]
   \textbf{IRC5}（通用）：\texttt{MoveL + SetDO doSprayOn} 手动开关枪\\
   \textbf{IRC5P}（Paint）：\texttt{PaintL/PaintC + brushdata} 原生工艺自动管时序\\
   控制器作为贯穿提示词/生成/校验/交付的\textbf{一等参数}，一键切换。};
-\node[panel,text width=8.0cm,anchor=north west,fill=abblight] at (9.6,\cyA-7.55) (m3){%
+\node[panel,text width=8.0cm,anchor=north west,fill=abblight] at ([yshift=-7pt]m2.south west) (m3){%
   \hd{Pack\&Go 一键交付}\\[2pt]
   \texttt{.mod + BASE.sys + T\_ROB1.pgf + README} → 可直接拖入 RobotStudio
   加载的完整目录；自动处理控制器 ISO-8859-1/CRLF 编码细节。};
@@ -132,13 +132,13 @@
   端到端 & 20–35s（i5/16G，无 GPU）\\
   离线包 & $\approx$192MB（单文件迁移）\\
   \end{tabular}};
-\node[panel,text width=8.05cm,anchor=north west] at (19.05,\cyA-5.35) (r2){%
+\node[panel,text width=8.05cm,anchor=north west] at ([yshift=-7pt]r1.south west) (r2){%
   \hd{生成—校验闭环（实跑实录）}\\[2pt]
   对缺陷代码精确拦截，错误码可追溯：\\
   {\ttfamily\scriptsize\color{abbdark}[ERROR][PNT001] 缺 brushdata 形参\\
   $[$ERROR$][$IO001$]$ 信号不在 EIO.cfg 白名单}\\
   把现场才暴露的 40212 错误\textbf{左移到生成时}。};
-\node[panel,text width=8.05cm,anchor=north west,fill=boxblue] at (19.05,\cyA-8.15) (r3){%
+\node[panel,text width=8.05cm,anchor=north west,fill=boxblue] at ([yshift=-7pt]r2.south west) (r3){%
   \hd{开源 \& 在线演示}\\[3pt]
   \begin{minipage}[t]{5.35cm}\footnotesize 源码\,github.com/Hollis36/abb-offline-coder\\
   演示\,hollis36.github.io/abb-offline-coder\\[1pt]
