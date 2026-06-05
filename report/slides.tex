@@ -44,17 +44,25 @@
 \setbeamertemplate{itemize subitem}{\textemdash}
 \linespread{1.06}
 
-% 阶段标签（汇报逻辑：每页右上角显示当前处于哪一部分）
-\newcommand{\phase}{}
+% 阶段导航条（汇报逻辑：顶部进度条，当前阶段自动点亮）
+\newcommand{\curphase}{0}
+\newcommand{\navseg}[2]{\ifnum\curphase=#1\relax{\color{abbred}\bfseries #2}\else{\color{abbgray}#2}\fi}
+\setbeamertemplate{headline}{%
+  \ifnum\curphase>0\relax
+    \vskip5pt\hbox to\paperwidth{\hfill\scriptsize\sffamily
+      \navseg{1}{\ding{172}\,背景与方案}\hskip5pt{\color{abbgray!45}\textbar}\hskip5pt
+      \navseg{2}{\ding{173}\,系统与关键技术}\hskip5pt{\color{abbgray!45}\textbar}\hskip5pt
+      \navseg{3}{\ding{174}\,工程与现场验证}\hskip5pt{\color{abbgray!45}\textbar}\hskip5pt
+      \navseg{4}{\ding{175}\,创新与总结}\hskip12pt}\vskip-3pt
+  \fi}
 % 页眉：标题 + 主题色强调线（简洁一行）
 \setbeamertemplate{frametitle}{%
-  \vspace{5pt}{\usebeamerfont{frametitle}\insertframetitle}\par\vspace{2pt}%
+  \vspace{2pt}{\usebeamerfont{frametitle}\insertframetitle}\par\vspace{2pt}%
   {\color{abbred}\rule{0.34\paperwidth}{1.4pt}}\par\vspace{-3pt}}
-% 页脚：左=当前阶段（汇报逻辑指示）· 右=署名与页码
+% 页脚
 \setbeamertemplate{footline}{%
   \hbox{\begin{beamercolorbox}[wd=\paperwidth,ht=2.4ex,dp=1.2ex,leftskip=10pt,rightskip=10pt]{}%
-  {\color{abbred}\scriptsize\sffamily\bfseries\phase}\hfill
-  {\color{abbgray}\scriptsize abb-offline-coder · 队伍：人工智能创新001\quad\insertframenumber/\inserttotalframenumber}%
+  {\color{abbgray}\scriptsize 人工智能创新赛 · abb-offline-coder\hfill 队伍：人工智能创新001\hfill\insertframenumber/\inserttotalframenumber}%
   \end{beamercolorbox}}}
 
 % 每页底部「结论条」——一句话点明该页核心（汇报逻辑：页页有落点）
@@ -131,7 +139,7 @@
 \end{frame}
 
 % ====================================================================
-\renewcommand{\phase}{\ding{172} 背景与方案}
+\renewcommand{\curphase}{1}
 % ============ 1. 痛点 ============
 \begin{frame}{行业痛点：喷涂编程的“三高一隔离”}
 \begin{columns}[T]
@@ -179,7 +187,7 @@
 \end{frame}
 
 % ====================================================================
-\renewcommand{\phase}{\ding{173} 系统与关键技术}
+\renewcommand{\curphase}{2}
 % ============ 3. 系统设计 ============
 \begin{frame}{系统设计：四层架构 + 六级流水线}
 \begin{columns}[T]
@@ -264,7 +272,7 @@
 \end{frame}
 
 % ====================================================================
-\renewcommand{\phase}{\ding{174} 工程与现场验证}
+\renewcommand{\curphase}{3}
 % ============ 6. 实测与佐证 ============
 \begin{frame}{工程质量与实测佐证}
 \begin{columns}[T]
@@ -338,7 +346,7 @@ ENDMODULE
 \end{frame}
 
 % ====================================================================
-\renewcommand{\phase}{\ding{175} 创新与总结}
+\renewcommand{\curphase}{4}
 % ============ 9. 创新点 ============
 \begin{frame}{创新点总览}
 \begin{columns}[T]
