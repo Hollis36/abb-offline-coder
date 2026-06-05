@@ -9,9 +9,9 @@
 
 | 文件 | 内容 | 规格 |
 |------|------|------|
-| [`main.tex`](main.tex) / [`main.pdf`](main.pdf) | **项目研究报告**（背景 · 架构 · 关键技术 · 创新点 · 实测 · 实拍配图 · 终端实录） | A4 · 20 页 |
+| [`main.tex`](main.tex) / [`main.pdf`](main.pdf) | **项目研究报告**（背景 · 架构 · 关键技术 · 创新点 · 实测 · 实拍配图 · 终端实录；封面含在线演示二维码） | A4 · 20 页 |
 | [`evidence.tex`](evidence.tex) / [`evidence.pdf`](evidence.pdf) | **项目佐证材料**（Git 历史 · 单元测试实跑 · 覆盖率 · 核心能力实证 · 真实产物 · 公开发布物料） | A4 · 8 页 |
-| [`poster.tex`](poster.tex) / [`poster.pdf`](poster.pdf) | **项目一图流海报**（答辩展板 / 路演，一眼看全） | A4 横版 · 1 页 |
+| [`poster.tex`](poster.tex) / [`poster.pdf`](poster.pdf) | **项目一图流海报**（答辩展板 / 路演，一眼看全；含在线演示二维码） | A4 横版 · 1 页 |
 | [`slides.tex`](slides.tex) / [`slides.pdf`](slides.pdf) | **答辩幻灯**（Beamer 16:9，10 页内；尾页含在线演示二维码） | 16:9 · 10 页 |
 | [`slides_notes.tex`](slides_notes.tex) / [`slides_notes.pdf`](slides_notes.pdf) | **答辩幻灯·演讲者备注版**（每页 幻灯+备注 并排，供 pdfpc/双屏演讲者模式或排练） | 双宽 · 10 页 |
 | [`script.tex`](script.tex) / [`script.pdf`](script.pdf) | **答辩讲稿**（逐页口语稿 + 舞台提示 + 预设问答 Q&A） | A4 · 3 页 |

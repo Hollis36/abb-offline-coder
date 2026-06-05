@@ -13,6 +13,7 @@
 \usepackage{xcolor}
 \usepackage{amssymb}
 \usepackage{pifont}
+\usepackage{qrcode}
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
 
@@ -131,10 +132,13 @@
   $[$ERROR$][$IO001$]$ 信号不在 EIO.cfg 白名单}\\
   把现场才暴露的 40212 错误\textbf{左移到生成时}。};
 \node[panel,text width=8.05cm,anchor=north west,fill=boxblue] at (19.05,\cyA-8.15) (r3){%
-  \hd{开源 \& 在线演示}\\[2pt]
-  \footnotesize 源码\,github.com/Hollis36/abb-offline-coder\\
-  演示\,hollis36.github.io/abb-offline-coder\\
-  \scriptsize Python 87\%\, ·\, MIT\, ·\, rag/ollama/qwen/chromadb/abb-robotics};
+  \hd{开源 \& 在线演示}\\[3pt]
+  \begin{minipage}[t]{5.35cm}\footnotesize 源码\,github.com/Hollis36/abb-offline-coder\\
+  演示\,hollis36.github.io/abb-offline-coder\\[1pt]
+  \scriptsize Python 87\%\, ·\, MIT\, ·\, rag/ollama/qwen/chromadb\end{minipage}\hfill
+  \begin{minipage}[t]{2.15cm}\centering
+  \qrcode[height=1.75cm]{https://hollis36.github.io/abb-offline-coder/}\\[1pt]
+  {\tiny\color{abbgray}扫码看在线演示}\end{minipage}};
 
 % ---------------- 底部带 ----------------
 \fill[abblight] (0,0) rectangle (27.9,1.05);
