@@ -42,7 +42,7 @@ def gen_default(
         None,
         "--controller",
         "-c",
-        help="目标控制器；IRC5P 启用 PaintL/PaintC + brushdata 工艺校验",
+        help="目标控制器；IRC5P 启用 SetBrush + PaintL/PaintC 工艺校验",
         case_sensitive=False,
     ),
     strict_tcp: bool = typer.Option(
