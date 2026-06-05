@@ -17,7 +17,7 @@
 | [`script.tex`](script.tex) / [`script.pdf`](script.pdf) | **答辩讲稿**（逐页口语稿 + 舞台提示 + 预设问答 Q&A） | A4 · 3 页 |
 | [`online_defense_guide.tex`](online_defense_guide.tex) / [`online_defense_guide.pdf`](online_defense_guide.pdf) | **在线答辩指南 & 检查清单**（屏幕共享策略 · 线上现场演示 · 线下→线上表达 · 赛前清单） | A4 · 2 页 |
 | [`combined.tex`](combined.tex) / [`combined.pdf`](combined.pdf) | **合订本**（研究报告 + 佐证材料附录） | A4 · 29 页 |
-| [`full_package.tex`](full_package.tex) / [`full_package.pdf`](full_package.pdf) | **全套提交包**（报告 + 佐证 + 海报 + 幻灯，单文件提交用） | A4/横版/16:9 · 42 页 |
+| [`full_package.tex`](full_package.tex) / [`full_package.pdf`](full_package.pdf) | **全套提交包**（封面 + 总目录 + 书签导航；报告 + 佐证 + 海报 + 幻灯，单文件提交用） | A4/横版/16:9 · 44 页 |
 
 > 佐证材料中的单元测试与覆盖率均为**可复现实测**（156 个用例全部通过，无需 GPU/Ollama）；
 > 知识库/端到端等数据标注为「项目记录」，来源于 `PROJECT_STATUS.md` / `EXECUTION_LOG.md`。

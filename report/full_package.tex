@@ -1,14 +1,18 @@
 % =====================================================================
-%  全套提交包 —— 研究报告 + 佐证材料 + 一图流海报 + 答辩幻灯
+%  全套提交包 —— 封面 + 总目录 + 研究报告 + 佐证材料 + 海报 + 答辩幻灯
 %  编译：确保 main/evidence/poster/slides.pdf 已生成，再 xelatex 两次
 % =====================================================================
 \documentclass[a4paper,12pt,fontset=none]{ctexart}
-\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage[a4paper,margin=2.4cm]{geometry}
 \setCJKmainfont{Noto Serif CJK SC}
 \setCJKsansfont{Noto Sans CJK SC}
 \usepackage{pdfpages}
 \usepackage{tikz}
 \usepackage{xcolor}
+\usepackage{qrcode}
+\usepackage[hidelinks,unicode]{hyperref}
+\usepackage{bookmark}
+
 \definecolor{abbred}{RGB}{217,74,31}
 \definecolor{abbdark}{RGB}{24,24,24}
 \definecolor{abbgray}{RGB}{95,95,95}
@@ -36,21 +40,89 @@
   队伍：人工智能创新001 \quad|\quad 完全离线 · 中文需求 → ABB RAPID 喷涂程序}\end{center}
   \clearpage}
 
+% ---- 目录条目 ----
+\newcommand{\tocitem}[3]{% #1 标题  #2 描述  #3 页码
+  \par\vspace{2pt}\noindent
+  {\sffamily\bfseries\large\color{abbdark}#1}\,\hfill\,{\sffamily\large\color{abbred}#3}\\[-1pt]
+  \hspace{1.2em}{\small\color{abbgray}#2}\par\vspace{6pt}
+  {\color{abblight}\hrule height 1pt}\par}
+
 \begin{document}
 
-% 一、研究报告（含自带封面）
+% ---- PDF 书签（绝对页码，指向各部分分隔页/封面）----
+\bookmark[page=1,level=0]{封面}
+\bookmark[page=2,level=0]{总目录}
+\bookmark[page=3,level=0]{一、项目研究报告}
+\bookmark[page=23,level=0]{附录 A · 项目佐证材料}
+\bookmark[page=32,level=0]{附录 B · 项目一图流海报}
+\bookmark[page=34,level=0]{附录 C · 答辩幻灯}
+
+% ================= 封面 =================
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[abbred] (current page.north west) rectangle ([yshift=-1.6cm]current page.north east);
+  \fill[abbdark] ([yshift=-1.6cm]current page.north west) rectangle ([yshift=-1.85cm]current page.north east);
+  \fill[abblight] (current page.south west) rectangle ([yshift=2.4cm]current page.south east);
+\end{tikzpicture}
+\vspace*{2.4cm}
+\begin{center}
+{\sffamily\bfseries\color{abbgray}\large 人工智能创新赛 · 参赛材料}\\[1.6cm]
+{\sffamily\fontsize{32}{38}\selectfont\bfseries\color{abbdark} abb-offline-coder}\\[0.4cm]
+{\color{abbred}\rule{6cm}{2pt}}\\[0.5cm]
+{\sffamily\LARGE\bfseries 面向 ABB 喷涂机器人的离线 AI 编程助手}\\[0.3cm]
+{\large\itshape “把中文一句话变成 ABB RAPID 喷涂程序”}\\[1.4cm]
+
+\begin{tikzpicture}
+\node[draw=abbred,line width=1.2pt,rounded corners=6pt,inner sep=14pt,fill=white,text width=12cm]{
+  \sffamily\large\renewcommand{\arraystretch}{1.45}
+  \begin{tabular}{@{}r@{\quad}l@{}}
+    \textbf{\color{abbred}册\ \ 名} & 全套提交包（报告 + 佐证 + 海报 + 幻灯）\\
+    \textbf{\color{abbred}比赛赛项} & 人工智能创新赛 \\
+    \textbf{\color{abbred}队伍名称} & 人工智能创新001 \\
+  \end{tabular}};
+\end{tikzpicture}\\[0.9cm]
+
+{\qrcode[height=1.9cm]{https://hollis36.github.io/abb-offline-coder/}}\\[3pt]
+{\sffamily\scriptsize\color{abbgray} 扫码查看在线演示页}
+\end{center}
+\vfill
+\begin{center}{\sffamily\small\color{abbgray} 2026 年 6 月 · v0.2 · MIT 开源}\end{center}
+\clearpage
+
+% ================= 总目录 =================
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[abbred] (current page.north west) rectangle ([yshift=-0.9cm]current page.north east);
+\end{tikzpicture}
+\vspace*{0.6cm}
+{\sffamily\Huge\bfseries\color{abbdark} 总\quad 目\quad 录}\\[2pt]
+{\color{abbred}\rule{5cm}{1.6pt}}\\[3pt]
+{\small\color{abbgray} 本册由四部分顺序装订；页码为合订后整册页码。PDF 阅读器左侧书签栏可点击跳转。}\\[14pt]
+
+\tocitem{一、项目研究报告}{选题背景 · 系统架构 · 关键技术 · 创新点 · 实测 · 实拍配图 · 终端实录（封面含二维码）}{第 3 页}
+\tocitem{附录 A · 项目佐证材料}{Git 历史 · 单元测试实跑（156 通过）· 覆盖率 · 核心能力实证 · 真实产物 · 公开物料}{第 23 页}
+\tocitem{附录 B · 项目一图流海报}{答辩展板 / 路演一图速览（A4 横版，含二维码）}{第 32 页}
+\tocitem{附录 C · 答辩幻灯}{Beamer 16:9 · 10 页（尾页含二维码）}{第 34 页}
+
+\vspace{10pt}
+\noindent\begin{tikzpicture}
+\node[draw=abbred,line width=0.8pt,rounded corners=4pt,fill=abblight,inner sep=8pt,
+  text width=\dimexpr\linewidth-18pt\relax]{%
+\small\textbf{\color{abbred}配套材料}\quad 另有\textbf{答辩讲稿}、\textbf{演讲者备注版幻灯}、\textbf{在线答辩指南}
+与各 \texttt{.tex} 源码，见提交包同目录 / 代码仓库 \texttt{report/}。};
+\end{tikzpicture}
+\clearpage
+
+% ================= 正文（带 PDF 书签）=================
 \includepdf[pages=-,fitpaper=true]{main.pdf}
 
-% 二、佐证材料
 \dividerpage{附\,录\,A}{项目佐证材料}{可复现实测 · Git 历史 · 单元测试 · 核心能力实跑 · 真实产物}
 \includepdf[pages=-,fitpaper=true]{evidence.pdf}
 
-% 三、一图流海报（A4 横版）
 \dividerpage{附\,录\,B}{项目一图流海报}{答辩展板 / 路演 · 一图速览（A4 横版）}
 \includepdf[pages=-,fitpaper=true]{poster.pdf}
 
-% 四、答辩幻灯（16:9）
-\dividerpage{附\,录\,C}{答辩幻灯}{Beamer 16:9 · 10 页}
+\dividerpage{附\,录\,C}{答辩幻灯}{Beamer 16:9 · 10 页（尾页含在线演示二维码）}
 \includepdf[pages=-,fitpaper=true]{slides.pdf}
 
 \end{document}
