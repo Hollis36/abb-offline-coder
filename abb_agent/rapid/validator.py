@@ -93,11 +93,6 @@ RAPID_KEYWORDS = frozenset(
     ]
 )
 
-# 引用 IO 信号的指令 → 第一个位置参数是信号名
-IO_INSTRUCTIONS = frozenset(
-    ["SetDO", "Reset", "SetAO", "WaitDI", "WaitDO", "PulseDO"]
-)
-
 # 喷涂 helpers 当前注入的默认 TCP（[0,0,200]），现场必须重新标定。
 # 兼容 [0,0,200] / [0.0, 0, 200.0] / 任意空格/小数 0.x 形式。
 DEFAULT_TCP_PATTERN = re.compile(
@@ -303,9 +298,15 @@ _BRUSHDATA_DECL_RE = re.compile(r"\bbrushdata\s+([A-Za-z_][A-Za-z0-9_]*)")
 _TOOLDATA_DECL_RE = re.compile(
     r"\btooldata\s+([A-Za-z_][A-Za-z0-9_]*)\s*:=\s*(.+?);", re.DOTALL
 )
-_IO_CALL_RE = re.compile(
-    r"^\s*(SetDO|Reset|SetAO|WaitDI|WaitDO|PulseDO)\s+([A-Za-z_][A-Za-z0-9_]*)"
+# 行首匹配 IO 指令名；group(2) 为其后全部内容，交给 _extract_io_signal 解析。
+_IO_INSTR_RE = re.compile(
+    r"^\s*(SetDO|SetAO|WaitDI|WaitDO|PulseDO|Reset)\b(.*)$", re.IGNORECASE
 )
+# 开关参数：\High、\PLength:=3、\SDelay:=0.5 等（含其后可选逗号）。
+_IO_SWITCH_RE = re.compile(r"^\s*\\[A-Za-z][A-Za-z0-9_]*(?:\s*:=\s*[^,;\s\\]+)?\s*,?")
+_IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+# Reset 之外的 IO 指令，操作数必为 IO 信号 → 恒做白名单校验（不受前缀启发式限制）。
+_UNAMBIGUOUS_IO_INSTR = frozenset(["setdo", "setao", "waitdi", "waitdo", "pulsedo"])
 
 
 def _check_paint_brushdata(
@@ -387,42 +388,75 @@ def _check_default_tcp(lines: list[str]) -> list[ValidationIssue]:
     return issues
 
 
-def _looks_like_io_signal(name: str) -> bool:
-    """启发式：标识符以 IO 命名前缀（do/di/ao/ai/go/gi）开头才算 IO。
+def _looks_like_io_signal(
+    name: str, prefixes: Iterable[str] = IO_SIGNAL_PREFIXES
+) -> bool:
+    """启发式：标识符以 IO 命名前缀开头才算 IO（前缀可经配置扩展）。
 
-    这样 `Reset stopwatch1;` 这种 clock 复位不会被误报为 IO001。
-    业内 RAPID 编程约定 IO 信号必以 do_/di_ 前缀命名。
+    仅用于消歧 `Reset <名>`（Reset 既可复位 DO，名字也可能是其它对象），
+    避免把非 IO 标识符误报为 IO001。SetDO/PulseDO 等专用 IO 指令不走这里。
     """
-    return any(name.lower().startswith(p) for p in IO_SIGNAL_PREFIXES)
+    lower = name.lower()
+    return any(lower.startswith(p.lower()) for p in prefixes)
+
+
+def _extract_io_signal(rest: str) -> str | None:
+    """从 IO 指令名之后的部分剥离开关参数，取第一个标识符为信号名。
+
+    兼容带开关的写法，信号名可能在开关之后：
+      PulseDO\\PLength:=3,B_dopaintfinish   → B_dopaintfinish
+      SetDO\\SDelay:=0.5, doSprayOn, 1       → doSprayOn
+      WaitDI diBrushOK, 1                    → diBrushOK
+    """
+    while True:
+        s = _IO_SWITCH_RE.match(rest)
+        if not s:
+            break
+        rest = rest[s.end():]
+    m = _IDENT_RE.search(rest)
+    return m.group(0) if m else None
 
 
 def _check_io_whitelist(
-    lines: list[str], whitelist: Iterable[str]
+    lines: list[str],
+    whitelist: Iterable[str],
+    io_signal_prefixes: Iterable[str] = IO_SIGNAL_PREFIXES,
 ) -> list[ValidationIssue]:
-    """检查代码引用的 IO 信号是否都在 EIO.cfg 白名单中。
+    """检查代码引用的 IO 信号是否都在 EIO.cfg 白名单中（大小写不敏感）。
 
-    去重：同一未知信号引用多次只报一次（M5）。
+    - SetDO/SetAO/WaitDI/WaitDO/PulseDO：操作数必为 IO 信号，恒校验，不论命名风格
+      （现场如 Hand_A_StartSpray / B_dopaintfinish 也会被纳入校验）。
+    - Reset：多义，仅当信号形似 IO（前缀启发式，可配置）才校验，否则跳过。
+    注：WaitUntil 等通用表达式不做 IO 校验（可能引用普通布尔/数值，易误报）。
+    去重：同一未知信号引用多次只报一次。
     """
-    allowed = set(whitelist)
+    allowed = {s.lower() for s in whitelist}
+    prefixes = tuple(io_signal_prefixes)
     issues: list[ValidationIssue] = []
     reported: set[str] = set()
     for ln_idx, raw in enumerate(lines, start=1):
         line = _strip_comments(raw)
-        m = _IO_CALL_RE.match(line)
+        m = _IO_INSTR_RE.match(line)
         if not m:
             continue
-        signal = m.group(2)
-        # 跳过明显不是 IO 的标识符（如 clock 变量名）
-        if not _looks_like_io_signal(signal):
+        instr = m.group(1).lower()
+        signal = _extract_io_signal(m.group(2))
+        if not signal:
             continue
-        if signal in allowed or signal in reported:
+        key = signal.lower()
+        if key in allowed:
             continue
-        reported.add(signal)
+        # Reset 多义：只有形似 IO 的名字才报，避免误伤非 IO 对象
+        if instr not in _UNAMBIGUOUS_IO_INSTR and not _looks_like_io_signal(signal, prefixes):
+            continue
+        if key in reported:
+            continue
+        reported.add(key)
         issues.append(
             ValidationIssue(
                 ln_idx, Severity.ERROR, "IO001",
                 f"IO 信号 '{signal}' 不在 EIO.cfg 白名单中。"
-                f"已知信号: {', '.join(sorted(allowed)) or '(空)'}",
+                f"已知信号: {', '.join(sorted(whitelist)) or '(空)'}",
             )
         )
     return issues
@@ -435,6 +469,7 @@ def validate(
     io_whitelist: Iterable[str] | None = None,
     strict_tcp: bool = False,
     brush_mode: BrushMode = "setbrush",
+    io_signal_prefixes: Iterable[str] = IO_SIGNAL_PREFIXES,
 ) -> ValidationReport:
     """对完整 RAPID 代码做静态校验。
 
@@ -445,6 +480,8 @@ def validate(
         strict_tcp: True 时若 tooldata 仍为默认 TCP 占位则报错（上线前应开启）
         brush_mode: IRC5P 工艺写法；"setbrush"（默认，PaintL 4 参数 + SetBrush）
             或 "brushdata_arg"（PaintL 5 参数，brushdata 作位置参数）
+        io_signal_prefixes: IO 命名前缀，用于消歧 Reset 等多义指令（可配置以适配
+            现场不规范命名）；SetDO/PulseDO 等专用 IO 指令不受其限制
 
     Returns:
         ValidationReport: 所有问题汇总
@@ -463,6 +500,6 @@ def validate(
             issues.extend(_check_default_tcp(lines))
 
     if io_whitelist is not None:
-        issues.extend(_check_io_whitelist(lines, io_whitelist))
+        issues.extend(_check_io_whitelist(lines, io_whitelist, io_signal_prefixes))
 
     return ValidationReport(issues=tuple(issues))

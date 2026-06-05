@@ -157,6 +157,112 @@ ENDMODULE
     assert any(i.code == "IO001" for i in report.issues)
 
 
+# -------- IO001 现场命名 / 开关参数 / 大小写（IO 校验加强） --------
+
+def test_pulsedo_switch_form_signal_checked() -> None:
+    """PulseDO\\PLength:=3,sig 这种带开关的写法，信号名仍要被提取并校验。"""
+    code = """MODULE M
+    PROC main()
+        PulseDO\\PLength:=3,B_dopaintfinish;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("doSprayOn",))
+    assert any(i.code == "IO001" and "B_dopaintfinish" in i.message for i in report.issues), \
+        report.format_summary()
+
+
+def test_pulsedo_switch_form_signal_in_whitelist_ok() -> None:
+    code = """MODULE M
+    PROC main()
+        PulseDO\\PLength:=3,B_dopaintfinish;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("B_dopaintfinish",))
+    assert not any(i.code == "IO001" for i in report.issues), report.format_summary()
+
+
+def test_setdo_field_named_signal_checked_regardless_of_prefix() -> None:
+    """现场非 do/di 前缀的信号名（如 Hand_A_StartSpray）在 SetDO 里也要校验。"""
+    code = """MODULE M
+    PROC main()
+        SetDO Hand_A_StartSpray, 1;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("doSprayOn",))
+    assert any(i.code == "IO001" and "Hand_A_StartSpray" in i.message for i in report.issues), \
+        report.format_summary()
+
+
+def test_setdo_sdelay_switch_signal_extracted() -> None:
+    """SetDO\\SDelay:=t, sig, val —— 应跳过开关取到真正的信号名。"""
+    code = """MODULE M
+    PROC main()
+        SetDO\\SDelay:=0.5, doSprayOn, 1;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("doSprayOn",))
+    assert not any(i.code == "IO001" for i in report.issues), report.format_summary()
+
+
+def test_reset_non_io_identifier_not_flagged() -> None:
+    """Reset 多义：非 IO 形态的标识符（如 stopwatch1）不应误报 IO001。"""
+    code = """MODULE M
+    PROC main()
+        Reset stopwatch1;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("doSprayOn",))
+    assert not any(i.code == "IO001" for i in report.issues), report.format_summary()
+
+
+def test_reset_do_prefixed_unknown_flagged() -> None:
+    code = """MODULE M
+    PROC main()
+        Reset doSprayOff;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("doSprayOn",))
+    assert any(i.code == "IO001" for i in report.issues), report.format_summary()
+
+
+def test_io_whitelist_match_case_insensitive() -> None:
+    """RAPID 标识符大小写不敏感，白名单匹配亦然。"""
+    code = """MODULE M
+    PROC main()
+        SetDO DOSPRAYON, 1;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, io_whitelist=("doSprayOn",))
+    assert not any(i.code == "IO001" for i in report.issues), report.format_summary()
+
+
+def test_io_signal_prefixes_configurable_for_reset() -> None:
+    """配置自定义前缀后，Reset 也能识别现场命名的 IO（如 a_clamp）。"""
+    code = """MODULE M
+    PROC main()
+        Reset A_clamp;
+    ENDPROC
+ENDMODULE
+"""
+    # 默认前缀不含 a_ → 视为非 IO，跳过
+    assert not any(
+        i.code == "IO001"
+        for i in validate(code, io_whitelist=("doSprayOn",)).issues
+    )
+    # 配置 a_ 前缀后 → 识别为 IO，且不在白名单 → 报错
+    report = validate(
+        code, io_whitelist=("doSprayOn",), io_signal_prefixes=("do", "di", "a_")
+    )
+    assert any(i.code == "IO001" for i in report.issues), report.format_summary()
+
+
 # ---------------- 集成场景：完整 IRC5P 程序 ----------------
 
 def test_complete_irc5p_program_valid() -> None:

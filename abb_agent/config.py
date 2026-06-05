@@ -114,6 +114,12 @@ class RapidConfig(BaseSettings):
         "diBrushOK",
     )
     default_brush_name: str = "bdMain"
+    # IO 信号命名前缀（小写）。用于消歧 Reset 等多义指令：仅当标识符形似 IO
+    # （以这些前缀开头）才纳入白名单校验，避免把 clock/计数器等非 IO 变量误报。
+    # 注：SetDO/SetAO/WaitDI/WaitDO/PulseDO 的操作数必为 IO 信号，恒做白名单校验，
+    #     不受本前缀限制。现场命名不规范时可扩展，如
+    #     ABB_AGENT_RAPID_IO_SIGNAL_PREFIXES='do,di,a_,b_,hand_'。
+    io_signal_prefixes: str | tuple[str, ...] = ("do", "di", "ao", "ai", "go", "gi")
 
     @field_validator("io_whitelist", mode="after")
     @classmethod
@@ -130,7 +136,22 @@ class RapidConfig(BaseSettings):
             return parts[:_MAX_IO_WHITELIST_ENTRIES]
         if isinstance(v, (list, tuple)):
             return tuple(str(x) for x in v)[:_MAX_IO_WHITELIST_ENTRIES]
-        return tuple()
+        return ()
+
+    @field_validator("io_signal_prefixes", mode="after")
+    @classmethod
+    def _parse_prefixes(cls, v: object) -> tuple[str, ...]:
+        """同 io_whitelist 的输入语法（CSV / JSON 数组 / tuple）；统一小写化。"""
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                import json
+                items = json.loads(stripped)
+                return tuple(str(x).strip().lower() for x in items if str(x).strip())
+            return tuple(s.strip().lower() for s in stripped.split(",") if s.strip())
+        if isinstance(v, (list, tuple)):
+            return tuple(str(x).strip().lower() for x in v if str(x).strip())
+        return ("do", "di", "ao", "ai", "go", "gi")
 
 
 class AppConfig(BaseSettings):

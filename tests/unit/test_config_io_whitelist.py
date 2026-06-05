@@ -49,3 +49,22 @@ def test_io_whitelist_capped_at_reasonable_size(monkeypatch: pytest.MonkeyPatch)
     cfg = RapidConfig()
     # 不强制硬上限值，只要不爆即可；同时数量应远超默认
     assert 100 < len(cfg.io_whitelist) <= 500
+
+
+# -------- io_signal_prefixes：同样的 CSV/JSON 语法 + 统一小写 --------
+
+def test_io_signal_prefixes_default() -> None:
+    cfg = RapidConfig()
+    assert cfg.io_signal_prefixes == ("do", "di", "ao", "ai", "go", "gi")
+
+
+def test_io_signal_prefixes_csv_lowercased(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ABB_AGENT_RAPID_IO_SIGNAL_PREFIXES", "DO,Hand_,A_")
+    cfg = RapidConfig()
+    assert cfg.io_signal_prefixes == ("do", "hand_", "a_")
+
+
+def test_io_signal_prefixes_json_array(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ABB_AGENT_RAPID_IO_SIGNAL_PREFIXES", '["do","di","b_"]')
+    cfg = RapidConfig()
+    assert cfg.io_signal_prefixes == ("do", "di", "b_")

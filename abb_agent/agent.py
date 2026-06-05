@@ -26,7 +26,7 @@ from abb_agent.rag.retriever import HybridRetriever
 from abb_agent.rag.vector_store import VectorStore
 from abb_agent.rapid.formatter import format_code
 from abb_agent.rapid.module_template import wrap_in_module
-from abb_agent.rapid.validator import ValidationReport, validate
+from abb_agent.rapid.validator import IO_SIGNAL_PREFIXES, ValidationReport, validate
 
 _CODE_BLOCK_RE = re.compile(r"```(?:rapid|RAPID)?\s*\n(.*?)```", re.DOTALL)
 
@@ -81,11 +81,12 @@ def _postprocess(
     io_whitelist: Iterable[str] | None = None,
     strict_tcp: bool = False,
     brush_mode: BrushMode = "setbrush",
+    io_signal_prefixes: Iterable[str] = IO_SIGNAL_PREFIXES,
 ) -> tuple[str, ValidationReport]:
     """对 LLM 输出做：包模块 → 格式化 → 校验。
 
-    controller / io_whitelist / strict_tcp / brush_mode 透传给 wrap_in_module 与
-    validate，决定 IRC5P 专项检查与喷涂工艺写法（setbrush / brushdata_arg）。
+    controller / io_whitelist / strict_tcp / brush_mode / io_signal_prefixes 透传给
+    wrap_in_module 与 validate，决定 IRC5P 专项检查、喷涂工艺写法与 IO 命名识别。
     """
     code = raw_code
     if not re.search(r"^\s*MODULE\b", code, re.MULTILINE):
@@ -99,6 +100,7 @@ def _postprocess(
         io_whitelist=io_whitelist,
         strict_tcp=strict_tcp,
         brush_mode=brush_mode,
+        io_signal_prefixes=io_signal_prefixes,
     )
     return code, report
 
@@ -167,6 +169,7 @@ class Agent:
             io_whitelist=rapid_cfg.io_whitelist,
             strict_tcp=eff_strict_tcp,
             brush_mode=rapid_cfg.brush_mode,
+            io_signal_prefixes=rapid_cfg.io_signal_prefixes,
         )
         duration = int((datetime.now() - start).total_seconds() * 1000)
 
@@ -221,6 +224,7 @@ class Agent:
                 io_whitelist=rapid_cfg.io_whitelist,
                 strict_tcp=rapid_cfg.controller == "IRC5P",
                 brush_mode=rapid_cfg.brush_mode,
+                io_signal_prefixes=rapid_cfg.io_signal_prefixes,
             )
             session.last_code = final_code
         else:

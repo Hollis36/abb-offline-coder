@@ -240,9 +240,18 @@ export ABB_AGENT_RAPID_CONTROLLER=IRC5P
 # IRC5P 喷涂工艺写法：setbrush（默认，SetBrush n + 4 参数 PaintL）或 brushdata_arg
 export ABB_AGENT_RAPID_BRUSH_MODE=setbrush
 
-# 用现场实际 IO 信号集覆盖默认白名单（JSON 数组字符串）
+# 用现场实际 IO 信号集覆盖默认白名单（CSV 或 JSON 数组）
 export ABB_AGENT_RAPID_IO_WHITELIST='["doSpray","doFan","doAtom","doColorA"]'
+
+# IO 命名前缀：消歧 Reset 等多义指令。现场命名不规范（如 A_/B_/Hand_ 前缀）时扩展，
+# 让这些信号也纳入白名单校验。SetDO/PulseDO 等专用 IO 指令不受此限，恒校验。
+export ABB_AGENT_RAPID_IO_SIGNAL_PREFIXES='do,di,a_,b_,hand_'
 ```
+
+> **IO 信号校验**：`SetDO`/`SetAO`/`WaitDI`/`WaitDO`/`PulseDO` 的操作数必为 IO 信号，
+> 无论命名风格都会与白名单核对（含 `PulseDO\PLength:=3,B_dopaintfinish` 这类带开关写法，
+> 大小写不敏感）。`Reset` 多义，仅当信号形似 IO（按上面的前缀）才校验。
+> `WaitUntil` 等通用表达式不做 IO 校验（避免误报普通布尔/数值变量）。
 
 完整配置见 [abb_agent/config.py](abb_agent/config.py)。
 
