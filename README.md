@@ -342,6 +342,19 @@ pytest tests/unit --cov=abb_agent --cov-report=term-missing
 | 后处理 + 校验 | < 0.2s |
 | **端到端单次生成** | **20-35 秒** |
 
+## 故障排查
+
+部署 / 运行中遇到问题，见 **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**。常见项速查：
+
+| 症状 | 多半是 |
+|------|--------|
+| 推理 500 / `llama-server ... segmentation fault` | 云 / 虚拟机 CPU 谎报 AMX → 禁用 AMX 后端 |
+| `生成请求失败: timed out` | 纯 CPU 慢 → 调高 `ABB_AGENT_LLM_TIMEOUT_SECONDS` 或加 `--no-few-shot` |
+| 安装 Ollama 报 `requires zstd` | 容器缺 zstd → `apt-get install zstd` |
+| 环境变量覆盖不生效 | 用了双下划线 → 改单下划线（`ABB_AGENT_LLM_MODEL_NAME`） |
+| `Connection refused` | Ollama 服务没起 → `ollama serve` |
+| 向量库 doctor 显示 `△ 空` | 仓库不含 ABB 手册 → 放入 `data/raw/` 后 `abb-agent kb build` |
+
 ## 风险与限制
 
 - 小模型对生僻 RAPID 指令的理解不完美，建议先用 `kb inspect` 检查检索质量
