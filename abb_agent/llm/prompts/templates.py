@@ -29,6 +29,21 @@ def _load_few_shot() -> str:
 
 
 @lru_cache(maxsize=1)
+def _load_few_shot_irc5p() -> str:
+    return resources.files("abb_agent.llm.prompts").joinpath(
+        "painting_few_shot_irc5p.md"
+    ).read_text(encoding="utf-8")
+
+
+def _few_shot_for(controller: ControllerKind) -> str:
+    """按控制器选 few-shot：IRC5P 用 PaintL/PaintC 示例，IRC5 用 MoveL+SetDO 示例。
+
+    分开是为了避免把 PaintL 示例泄漏进 IRC5 生成（反之亦然）。
+    """
+    return _load_few_shot_irc5p() if controller == "IRC5P" else _load_few_shot()
+
+
+@lru_cache(maxsize=1)
 def _load_irc5p_addendum() -> str:
     return resources.files("abb_agent.llm.prompts").joinpath("system_irc5p.md").read_text(
         encoding="utf-8"
@@ -39,6 +54,7 @@ def clear_prompt_cache() -> None:
     """清除 LRU 缓存。仅供测试使用，确保模板修改在测试间生效。"""
     _load_system_prompt.cache_clear()
     _load_few_shot.cache_clear()
+    _load_few_shot_irc5p.cache_clear()
     _load_irc5p_addendum.cache_clear()
 
 
@@ -63,7 +79,7 @@ def build_full_prompt(
     """
     sys_p = _compose_system(controller)
     if include_few_shot:
-        sys_p = sys_p + "\n\n## 喷涂典型示例 (Few-Shot)\n\n" + _load_few_shot()
+        sys_p = sys_p + "\n\n## 喷涂典型示例 (Few-Shot)\n\n" + _few_shot_for(controller)
 
     user_prompt_parts: list[str] = []
     user_prompt_parts.append("## 用户需求")
@@ -90,5 +106,5 @@ def system_prompt(controller: ControllerKind = "IRC5") -> str:
     return _compose_system(controller)
 
 
-def few_shot_prompt() -> str:
-    return _load_few_shot()
+def few_shot_prompt(controller: ControllerKind = "IRC5") -> str:
+    return _few_shot_for(controller)

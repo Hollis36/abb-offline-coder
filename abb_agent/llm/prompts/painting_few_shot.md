@@ -222,3 +222,42 @@ MODULE PaintZigzagParam
     ENDPROC
 ENDMODULE
 ```
+
+---
+
+## 示例 7：车门外板 Z 字喷涂
+
+**需求**：车门外板约 1000(X) x 500(Y)mm，Z 字扫描，行距 60mm，速度 v150。
+
+```rapid
+MODULE PaintCarDoor
+    ! 车门外板 Z 字扫描喷涂
+    PERS tooldata tSprayGun := [TRUE,[[0,0,200],[1,0,0,0]],[2.5,[0,0,80],[1,0,0,0],0,0,0]];
+    PERS wobjdata wobjDoor := [FALSE,TRUE,"",[[1200,0,800],[1,0,0,0]],[[0,0,0],[1,0,0,0]]];
+    CONST speeddata vPaint := [150,400,5000,1000];
+    PERS num nRowSpacing := 60;
+
+    PROC main()
+        VAR num i := 0;
+        VAR num yPos := 0;
+        VAR robtarget pStart;
+        VAR robtarget pEnd;
+        ConfL\Off;
+        SingArea\Wrist;
+        FOR i FROM 0 TO 8 DO
+            yPos := i * nRowSpacing;
+            IF i MOD 2 = 0 THEN
+                pStart := [[0,yPos,250],[0,0,1,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
+                pEnd := [[1000,yPos,250],[0,0,1,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
+            ELSE
+                pStart := [[1000,yPos,250],[0,0,1,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
+                pEnd := [[0,yPos,250],[0,0,1,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
+            ENDIF
+            MoveL pStart, v500, fine, tSprayGun\WObj:=wobjDoor;
+            SetDO doSprayOn, 1;
+            MoveL pEnd, vPaint, z1, tSprayGun\WObj:=wobjDoor;
+            SetDO doSprayOn, 0;
+        ENDFOR
+    ENDPROC
+ENDMODULE
+```
