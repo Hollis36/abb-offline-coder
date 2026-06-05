@@ -120,7 +120,7 @@
 \renewcommand{\arraystretch}{1.25}
 
 % ---------- 实拍配图：截图路径 + 带细边框的插图宏 ----------
-\graphicspath{{../docs/screenshots/}}
+\graphicspath{{../docs/screenshots/}{../docs/field/}}
 \newcommand{\shot}[2][\linewidth]{%
   \setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.5pt}%
   \fcolorbox{linegray}{white}{\includegraphics[width=#1]{#2}}}
@@ -827,6 +827,24 @@ ENDMODULE
 \noindent 两份程序均自动补全 \texttt{tooldata/wobjdata/speeddata} 声明、安全模板与中文注释，
 并通过静态校验。配合 \texttt{--bundle} 即生成 \texttt{BASE.sys} 与 \texttt{T\_ROB1.pgf}，
 形成可直接拖入 RobotStudio 加载的完整目录。
+
+\subsection{真实落地：现场运行与成品质检}
+本工具生成的 RAPID 喷涂程序已在\textbf{真实喷涂车间}落地运行。下图为现场实拍：工件在
+\textbf{物理隔离、无网}的玻璃喷房内，由机器人\textbf{执行本工具生成的程序}完成喷涂，并对成品
+做\textbf{膜厚检测}（多点 45.9--61.3\,$\mu$m），形成“离线生成 $\to$ 现场运行 $\to$ 成品质检”闭环。
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.42\textwidth}\centering
+  \shot{field-cell.jpg}\\[1pt]{\scriptsize 物理隔离、无网玻璃喷房}\end{minipage}\hfill
+\begin{minipage}{0.42\textwidth}\centering
+  \shot{field-robot.jpg}\\[1pt]{\scriptsize 机器人执行本工具生成的程序喷涂}\end{minipage}\\[6pt]
+\begin{minipage}{0.42\textwidth}\centering
+  \shot{field-part.jpg}\\[1pt]{\scriptsize 喷涂成品（漆面均匀、光泽一致）}\end{minipage}\hfill
+\begin{minipage}{0.42\textwidth}\centering
+  \shot{field-qc.jpg}\\[1pt]{\scriptsize 成品膜厚检测：多点 45.9--61.3\,$\mu$m}\end{minipage}
+\caption{真实应用现场：本工具生成的 RAPID 喷涂程序在物理隔离、无网喷涂车间的现场运行与成品质检（现场实拍）。}
+\end{figure}
 
 % =====================================================================
 \section{安全、合规与伦理}

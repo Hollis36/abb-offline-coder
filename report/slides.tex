@@ -16,7 +16,7 @@
 \usepackage{booktabs}
 \usepackage{qrcode}
 
-\graphicspath{{../docs/screenshots/}}
+\graphicspath{{../docs/screenshots/}{../docs/field/}}
 
 % ---------------- 配色与主题 ----------------
 \definecolor{abbred}{RGB}{217,74,31}
@@ -301,6 +301,22 @@ ENDMODULE
 \end{itemize}
 \end{column}
 \end{columns}
+\end{frame}
+
+% ============ 8b. 真实应用现场（现场照片）============
+\begin{frame}{真实应用现场：本工具生成程序的现场运行}
+\begin{columns}[t]
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-cell.jpg}\\[2pt]{\scriptsize 物理隔离 · 无网玻璃喷房}\end{column}
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-robot.jpg}\\[2pt]{\scriptsize 机器人执行本工具生成程序喷涂}\end{column}
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-part.jpg}\\[2pt]{\scriptsize 喷涂成品 · 漆面均匀}\end{column}
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-qc.jpg}\\[2pt]{\scriptsize 成品膜厚检测 45.9–61.3\,$\mu$m}\end{column}
+\end{columns}
+\vfill
+{\footnotesize 图为本工具生成的 RAPID 喷涂程序在真实（物理隔离、无网）喷涂车间的\textbf{现场运行}与\textbf{成品质检}——\textbf{完全离线}定位真实落地。}
 \end{frame}
 
 % ============ 9. 总结 ============

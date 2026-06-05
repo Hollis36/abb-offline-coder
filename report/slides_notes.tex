@@ -17,7 +17,7 @@
 \usepackage{booktabs}
 \usepackage{qrcode}
 
-\graphicspath{{../docs/screenshots/}}
+\graphicspath{{../docs/screenshots/}{../docs/field/}}
 
 % ---------------- 配色与主题 ----------------
 \definecolor{abbred}{RGB}{217,74,31}
@@ -346,6 +346,25 @@ ENDMODULE
 \note{\textbf{应用案例（约 35 秒）}：一句“600×400 平板 Z 字扫描、行距 50mm” $\to$
 \textbf{自动补全} tooldata/wobjdata/speeddata/brushdata + 安全模板 + 中文注释，过校验，可直接 Pack\&Go。\\
 \textit{提示：用手指顺一下左侧 \texttt{PaintL}/\texttt{brushdata} 关键行，让评委看到“真能跑”。}}
+\end{frame}
+
+% ============ 8b. 真实应用现场（现场照片）============
+\begin{frame}{真实应用现场：本工具生成程序的现场运行}
+\begin{columns}[t]
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-cell.jpg}\\[2pt]{\scriptsize 物理隔离 · 无网玻璃喷房}\end{column}
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-robot.jpg}\\[2pt]{\scriptsize 机器人执行本工具生成程序喷涂}\end{column}
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-part.jpg}\\[2pt]{\scriptsize 喷涂成品 · 漆面均匀}\end{column}
+\begin{column}{0.245\textwidth}\centering
+  \includegraphics[width=\linewidth]{field-qc.jpg}\\[2pt]{\scriptsize 成品膜厚检测 45.9–61.3\,$\mu$m}\end{column}
+\end{columns}
+\vfill
+{\footnotesize 图为本工具生成的 RAPID 喷涂程序在真实（物理隔离、无网）喷涂车间的\textbf{现场运行}与\textbf{成品质检}——\textbf{完全离线}定位真实落地。}
+\note{\textbf{真实落地（约 30 秒，强力佐证）}：这不是 demo——左到右是\textbf{真实喷涂车间}：
+物理隔离无网玻璃喷房 → 机器人\textbf{执行本工具生成的 RAPID 程序}喷涂工件 → 喷涂成品 → 膜厚检测 \textbf{45.9–61.3\,$\mu$m}。\\
+\textit{提示：点出“这是我们工具生成的程序真实跑出来的件”，强调离线落地闭环。}}
 \end{frame}
 
 % ============ 9. 总结 ============
