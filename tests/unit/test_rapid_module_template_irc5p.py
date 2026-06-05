@@ -6,7 +6,7 @@ from abb_agent.rapid.module_template import empty_painting_skeleton, wrap_in_mod
 
 def test_wrap_in_module_irc5p_injects_brushdata() -> None:
     code = "PROC main()\n    PaintL p1, vPaint, bdMain, z10, tSprayGun;\nENDPROC"
-    wrapped = wrap_in_module(code, controller="IRC5P")
+    wrapped = wrap_in_module(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert "PERS brushdata bdMain" in wrapped, wrapped
 
 
@@ -45,10 +45,25 @@ def test_wrap_in_module_irc5p_still_injects_tooldata() -> None:
 
 
 def test_empty_painting_skeleton_irc5p_includes_brushdata() -> None:
-    """空骨架在 IRC5P 模式下应包含 brushdata 声明。"""
-    skel = empty_painting_skeleton(controller="IRC5P")
+    """brushdata_arg 写法下空骨架应包含 brushdata 声明。"""
+    skel = empty_painting_skeleton(controller="IRC5P", brush_mode="brushdata_arg")
     rendered = skel.render()
     assert "PERS brushdata" in rendered
+
+
+def test_wrap_in_module_irc5p_setbrush_default_no_brushdata() -> None:
+    """默认 setbrush：不注入 brushdata（刷子由 SetBrush 选择）。"""
+    code = "PROC main()\n    SetBrush 1;\n    PaintL p1, v600, z10, tSprayGun;\nENDPROC"
+    wrapped = wrap_in_module(code, controller="IRC5P")
+    assert "PERS brushdata" not in wrapped
+    assert "PERS tooldata tSprayGun" in wrapped  # 其它默认声明仍注入
+
+
+def test_empty_painting_skeleton_irc5p_setbrush_default_mentions_setbrush() -> None:
+    skel = empty_painting_skeleton(controller="IRC5P")  # 默认 setbrush
+    rendered = skel.render()
+    assert "PERS brushdata" not in rendered
+    assert "SetBrush" in rendered
 
 
 def test_empty_painting_skeleton_irc5_default_unchanged() -> None:

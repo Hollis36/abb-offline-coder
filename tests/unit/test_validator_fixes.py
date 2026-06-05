@@ -101,7 +101,7 @@ def test_paintl_after_if_then_is_validated() -> None:
     ENDPROC
 ENDMODULE
 """
-    report = validate(code, controller="IRC5P")
+    report = validate(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert any(i.code == "PNT001" for i in report.errors), report.format_summary()
 
 
@@ -114,7 +114,7 @@ def test_multiple_paintl_on_same_line_all_checked() -> None:
     ENDPROC
 ENDMODULE
 """
-    report = validate(code, controller="IRC5P")
+    report = validate(code, controller="IRC5P", brush_mode="brushdata_arg")
     # 第二个 PaintL 缺 brushdata，应被检出
     pnt = [i for i in report.errors if i.code == "PNT001"]
     assert len(pnt) >= 1, report.format_summary()

@@ -58,6 +58,7 @@ def test_linear_scan_irc5p_paintl_carries_brushdata() -> None:
         Pose(0, 0, 0), Pose(100, 0, 0),
         controller="IRC5P",
         brush="bdHigh",
+        brush_mode="brushdata_arg",
     )
     # PaintL target, speed, brush, zone, tool\WObj:=wobj;
     assert "bdHigh" in code
@@ -97,10 +98,37 @@ def test_arc_segment_irc5p_uses_paintc() -> None:
         Pose(0, 0, 0), Pose(50, 50, 0), Pose(100, 0, 0),
         controller="IRC5P",
         brush="bdMain",
+        brush_mode="brushdata_arg",
     )
     assert "PaintC" in code
     assert "bdMain" in code
     assert "MoveC" not in code
+
+
+def test_linear_scan_irc5p_setbrush_default_uses_setbrush() -> None:
+    """默认 setbrush：SetBrush n + 4 参数 PaintL，不带 brushdata 名。"""
+    code = linear_scan(Pose(0, 0, 0), Pose(100, 0, 0), controller="IRC5P")
+    assert "SetBrush" in code
+    assert "PaintL" in code
+    assert "bdMain" not in code
+
+
+def test_arc_segment_irc5p_setbrush_default_uses_setbrush() -> None:
+    code = arc_segment(
+        Pose(0, 0, 0), Pose(50, 50, 0), Pose(100, 0, 0), controller="IRC5P"
+    )
+    assert "SetBrush" in code
+    assert "PaintC" in code
+    assert "MoveC" not in code
+    assert "bdMain" not in code
+
+
+def test_zigzag_scan_irc5p_setbrush_default_one_setbrush() -> None:
+    code = zigzag_scan(
+        Pose(0, 0, 300), width=200, height=100, row_spacing=50, controller="IRC5P"
+    )
+    assert code.count("SetBrush 1;") == 1  # 开头选一次刷子（指令，非注释）
+    assert code.count("PaintL") >= 3
 
 
 def test_arc_segment_irc5_default_unchanged() -> None:

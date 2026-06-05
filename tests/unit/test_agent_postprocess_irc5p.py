@@ -6,14 +6,14 @@ from abb_agent.agent import _postprocess
 
 def test_postprocess_irc5p_wraps_with_brushdata() -> None:
     raw = "PROC main()\n    PaintL p1, vPaint, bdMain, z10, tSprayGun;\nENDPROC"
-    final, _ = _postprocess(raw, controller="IRC5P")
+    final, _ = _postprocess(raw, controller="IRC5P", brush_mode="brushdata_arg")
     assert "PERS brushdata bdMain" in final
 
 
 def test_postprocess_irc5p_validates_with_brushdata_check() -> None:
     """IRC5P 模式下 PaintL 缺 brushdata 会被校验出来。"""
     raw = "PROC main()\n    PaintL p1, vPaint, z10, tSprayGun;\nENDPROC"
-    _, report = _postprocess(raw, controller="IRC5P")
+    _, report = _postprocess(raw, controller="IRC5P", brush_mode="brushdata_arg")
     assert any(i.code == "PNT001" for i in report.errors), report.format_summary()
 
 
@@ -35,3 +35,11 @@ def test_postprocess_strict_tcp_passthrough() -> None:
     raw = "PROC main()\n    PaintL p1, vPaint, bdMain, z10, tSprayGun;\nENDPROC"
     _, report = _postprocess(raw, controller="IRC5P", strict_tcp=True)
     assert any(i.code == "TCP001" for i in report.issues), report.format_summary()
+
+
+def test_postprocess_irc5p_setbrush_default_no_brushdata_injection() -> None:
+    """默认 setbrush 模式：不注入 brushdata，4 参数 PaintL 合法。"""
+    raw = "PROC main()\n    SetBrush 1;\n    PaintL p1, v600, z10, tSprayGun;\nENDPROC"
+    final, report = _postprocess(raw, controller="IRC5P")
+    assert "PERS brushdata" not in final
+    assert not any(i.code == "PNT001" for i in report.issues), report.format_summary()

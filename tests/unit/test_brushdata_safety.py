@@ -25,7 +25,7 @@ def test_brushdata_decl_irc5p_has_warning_comment() -> None:
 def test_wrap_in_module_scans_paintl_for_brush_refs() -> None:
     """代码引用 bdCustom，wrap 应该注入 bdCustom 而不是默认 bdMain。"""
     code = "PROC main()\n    PaintL p1, vPaint, bdCustom, z10, tSprayGun;\nENDPROC"
-    wrapped = wrap_in_module(code, controller="IRC5P")
+    wrapped = wrap_in_module(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert "PERS brushdata bdCustom" in wrapped
 
 
@@ -37,7 +37,7 @@ def test_wrap_in_module_injects_all_referenced_brushes() -> None:
         "    PaintC p2, p3, vPaint, bdHigh, z10, tSprayGun;\n"
         "ENDPROC"
     )
-    wrapped = wrap_in_module(code, controller="IRC5P")
+    wrapped = wrap_in_module(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert "PERS brushdata bdLow" in wrapped
     assert "PERS brushdata bdHigh" in wrapped
 
@@ -51,7 +51,7 @@ def test_wrap_in_module_skips_already_declared_brushes() -> None:
         "    PaintC p2, p3, vPaint, bdHigh, z10, tSprayGun;\n"
         "ENDPROC"
     )
-    wrapped = wrap_in_module(code, controller="IRC5P")
+    wrapped = wrap_in_module(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert wrapped.count("PERS brushdata bdLow") == 1
     assert "PERS brushdata bdHigh" in wrapped
 
@@ -59,7 +59,7 @@ def test_wrap_in_module_skips_already_declared_brushes() -> None:
 def test_wrap_in_module_irc5p_falls_back_to_bdMain_when_no_paintl() -> None:
     """代码没有 PaintL 引用时仍注入默认 bdMain（兜底）。"""
     code = "PROC main()\n    MoveL p1, v500, fine, tSprayGun;\nENDPROC"
-    wrapped = wrap_in_module(code, controller="IRC5P")
+    wrapped = wrap_in_module(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert "PERS brushdata bdMain" in wrapped
 
 
@@ -83,5 +83,5 @@ def test_wrap_in_module_handles_inline_robtarget() -> None:
         "vPaint, bdHigh, z10, tSprayGun\\WObj:=wobjPart;\n"
         "ENDPROC"
     )
-    wrapped = wrap_in_module(code, controller="IRC5P")
+    wrapped = wrap_in_module(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert "PERS brushdata bdHigh" in wrapped, wrapped

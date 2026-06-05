@@ -12,6 +12,10 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ControllerKind = Literal["IRC5", "IRC5P"]
+# IRC5P 下 PaintL/PaintC 的两种工艺写法：
+#   "setbrush"     —— PaintL p,v,zone,tool（4 参数）+ 独立 SetBrush n 选刷子表（现场常见）
+#   "brushdata_arg" —— PaintL p,v,brushdata,zone,tool（5 参数，brushdata 作位置参数）
+BrushMode = Literal["setbrush", "brushdata_arg"]
 
 # IO 白名单条目数硬上限，防 env var 注入超长字符串
 _MAX_IO_WHITELIST_ENTRIES = 1000
@@ -98,6 +102,8 @@ class RapidConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="ABB_AGENT_RAPID_", extra="ignore")
 
     controller: ControllerKind = "IRC5"
+    # IRC5P 喷涂工艺写法，默认 setbrush（PaintL 4 参数 + SetBrush 选刷子表）。
+    brush_mode: BrushMode = "setbrush"
     # 注：声明为 str | tuple[str, ...] 是为了让 pydantic-settings 跳过自动 JSON 解析；
     #     field_validator 会在赋值后统一规范化为 tuple[str, ...]。
     io_whitelist: str | tuple[str, ...] = (

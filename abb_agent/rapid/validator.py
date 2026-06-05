@@ -27,6 +27,8 @@ from enum import Enum
 from typing import Literal
 
 ControllerKind = Literal["IRC5", "IRC5P"]
+# IRC5P 喷涂工艺写法，详见 config.BrushMode。
+BrushMode = Literal["setbrush", "brushdata_arg"]
 
 
 class Severity(str, Enum):
@@ -82,10 +84,12 @@ RAPID_KEYWORDS = frozenset(
         "VAR", "PERS", "CONST", "LOCAL", "TASK", "GLOBAL",
         "MoveJ", "MoveL", "MoveC", "MoveAbsJ", "MoveLDO", "MoveJDO", "MoveCDO",
         "MoveLSync", "MoveJSync", "MoveCSync",
-        "PaintL", "PaintC",
+        "PaintL", "PaintC", "SetBrush",
         "TriggL", "TriggC", "TriggJ", "TriggIO", "TriggData", "TriggEquip",
-        "SetDO", "Reset", "SetAO", "WaitDI", "WaitDO", "PulseDO",
+        "SetDO", "Reset", "SetAO", "WaitDI", "WaitDO", "WaitUntil", "PulseDO",
         "WaitTime", "Stop", "EXIT",
+        "AccSet", "VelSet", "ConfL", "ConfJ", "SingArea",
+        "TPWrite", "ClkReset", "ClkStart", "ClkStop", "ClkRead",
     ]
 )
 
@@ -304,16 +308,30 @@ _IO_CALL_RE = re.compile(
 )
 
 
-def _check_paint_brushdata(lines: list[str]) -> list[ValidationIssue]:
-    """IRC5P: PaintL 要 ≥5 个位置参数；PaintC 要 ≥6 个。
+def _check_paint_brushdata(
+    lines: list[str], brush_mode: BrushMode = "setbrush"
+) -> list[ValidationIssue]:
+    """IRC5P PaintL/PaintC 参数校验，按 brush_mode 切换两种工艺写法。
 
-    PaintL: target, speed, brushdata, zone, tool [\\WObj:=wobj]
-    PaintC: pMid, pEnd, speed, brushdata, zone, tool [\\WObj:=wobj]
-    我们用「已知的 brushdata 名称集合」做交叉校验：声明里出现的 bdXxx 应在调用里被引用。
-    退化情形（无法解析）：用参数计数作为兜底。
+    setbrush（默认，现场常见 IPS/RobotWare Paint 写法）：
+      PaintL: target, speed, zone, tool [\\WObj:=wobj]        → 至少 4 个位置参数
+      PaintC: pMid, pEnd, speed, zone, tool [\\WObj:=wobj]    → 至少 5 个
+      刷子由独立的 SetBrush n 指令选择，PaintL/PaintC 不带 brushdata。
+
+    brushdata_arg（旧变体，brushdata 作位置参数）：
+      PaintL: target, speed, brushdata, zone, tool           → 至少 5 个
+      PaintC: pMid, pEnd, speed, brushdata, zone, tool       → 至少 6 个
+      若声明过 brushdata，调用中应引用其中一个名字。
     """
     code = "\n".join(lines)
     declared_brushes = set(_BRUSHDATA_DECL_RE.findall(code))
+
+    if brush_mode == "brushdata_arg":
+        paintl_min, paintc_min = 5, 6
+        short_hint = "很可能缺少 brushdata 形参"
+    else:
+        paintl_min, paintc_min = 4, 5
+        short_hint = "至少需要 目标, 速度, 转弯区, 工具"
 
     issues: list[ValidationIssue] = []
     for ln_idx, raw in enumerate(lines, start=1):
@@ -325,19 +343,18 @@ def _check_paint_brushdata(lines: list[str]) -> list[ValidationIssue]:
             body = re.sub(r"\\[A-Za-z]+\s*:=\s*[^,;\s\\]+", "", m.group(2))
             args = _split_args(body)
 
-            min_args = 5 if instr == "PaintL" else 6
+            min_args = paintl_min if instr == "PaintL" else paintc_min
             if len(args) < min_args:
                 issues.append(
                     ValidationIssue(
                         ln_idx, Severity.ERROR, "PNT001",
-                        f"{instr} 参数数量 {len(args)} 不足 ({min_args})，"
-                        f"很可能缺少 brushdata 形参",
+                        f"{instr} 参数数量 {len(args)} 不足 ({min_args})，{short_hint}",
                     )
                 )
                 continue
 
-            # 进一步检查：若声明过 brushdata，则调用中应包含其中一个名字
-            if declared_brushes:
+            # brushdata_arg 模式额外校验：声明过 brushdata 则调用应引用其一
+            if brush_mode == "brushdata_arg" and declared_brushes:
                 tokens = {tok for arg in args for tok in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", arg)}
                 if not (tokens & declared_brushes):
                     issues.append(
@@ -417,14 +434,17 @@ def validate(
     controller: ControllerKind = "IRC5",
     io_whitelist: Iterable[str] | None = None,
     strict_tcp: bool = False,
+    brush_mode: BrushMode = "setbrush",
 ) -> ValidationReport:
     """对完整 RAPID 代码做静态校验。
 
     Args:
         code: RAPID 源码字符串
-        controller: 控制器类型；"IRC5P" 时启用 PaintL/PaintC brushdata 检查
+        controller: 控制器类型；"IRC5P" 时启用 PaintL/PaintC 参数检查
         io_whitelist: 控制器 EIO.cfg 中已注册的信号集；None 跳过 IO 检查
         strict_tcp: True 时若 tooldata 仍为默认 TCP 占位则报错（上线前应开启）
+        brush_mode: IRC5P 工艺写法；"setbrush"（默认，PaintL 4 参数 + SetBrush）
+            或 "brushdata_arg"（PaintL 5 参数，brushdata 作位置参数）
 
     Returns:
         ValidationReport: 所有问题汇总
@@ -438,7 +458,7 @@ def validate(
     issues.extend(_check_quotes(lines))
 
     if controller == "IRC5P":
-        issues.extend(_check_paint_brushdata(lines))
+        issues.extend(_check_paint_brushdata(lines, brush_mode))
         if strict_tcp:
             issues.extend(_check_default_tcp(lines))
 

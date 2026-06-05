@@ -17,7 +17,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from abb_agent.config import ControllerKind, get_config
+from abb_agent.config import BrushMode, ControllerKind, get_config
 from abb_agent.llm.ollama_client import ChatMessage, OllamaClient
 from abb_agent.llm.prompts.templates import build_full_prompt, system_prompt
 from abb_agent.rag.context_builder import BuiltContext, ContextBuilder
@@ -80,21 +80,25 @@ def _postprocess(
     controller: ControllerKind = "IRC5",
     io_whitelist: Iterable[str] | None = None,
     strict_tcp: bool = False,
+    brush_mode: BrushMode = "setbrush",
 ) -> tuple[str, ValidationReport]:
     """对 LLM 输出做：包模块 → 格式化 → 校验。
 
-    controller / io_whitelist / strict_tcp 透传给 wrap_in_module 与 validate，
-    决定 IRC5P 专项检查是否启用。
+    controller / io_whitelist / strict_tcp / brush_mode 透传给 wrap_in_module 与
+    validate，决定 IRC5P 专项检查与喷涂工艺写法（setbrush / brushdata_arg）。
     """
     code = raw_code
     if not re.search(r"^\s*MODULE\b", code, re.MULTILINE):
-        code = wrap_in_module(code, module_name="PaintProgram", controller=controller)
+        code = wrap_in_module(
+            code, module_name="PaintProgram", controller=controller, brush_mode=brush_mode
+        )
     code = format_code(code)
     report = validate(
         code,
         controller=controller,
         io_whitelist=io_whitelist,
         strict_tcp=strict_tcp,
+        brush_mode=brush_mode,
     )
     return code, report
 
@@ -162,6 +166,7 @@ class Agent:
             controller=eff_controller,
             io_whitelist=rapid_cfg.io_whitelist,
             strict_tcp=eff_strict_tcp,
+            brush_mode=rapid_cfg.brush_mode,
         )
         duration = int((datetime.now() - start).total_seconds() * 1000)
 
@@ -215,6 +220,7 @@ class Agent:
                 controller=rapid_cfg.controller,
                 io_whitelist=rapid_cfg.io_whitelist,
                 strict_tcp=rapid_cfg.controller == "IRC5P",
+                brush_mode=rapid_cfg.brush_mode,
             )
             session.last_code = final_code
         else:

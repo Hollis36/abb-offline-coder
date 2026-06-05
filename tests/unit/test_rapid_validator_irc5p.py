@@ -32,7 +32,7 @@ def test_paintl_missing_brushdata_triggers_pnt001() -> None:
     ENDPROC
 ENDMODULE
 """
-    report = validate(code, controller="IRC5P")
+    report = validate(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert any(i.code == "PNT001" and i.severity == Severity.ERROR for i in report.issues), \
         report.format_summary()
 
@@ -44,7 +44,7 @@ def test_paintc_missing_brushdata_triggers_pnt001() -> None:
     ENDPROC
 ENDMODULE
 """
-    report = validate(code, controller="IRC5P")
+    report = validate(code, controller="IRC5P", brush_mode="brushdata_arg")
     assert any(i.code == "PNT001" for i in report.errors), report.format_summary()
 
 
@@ -181,5 +181,73 @@ ENDMODULE
         controller="IRC5P",
         io_whitelist=("doSprayOn", "doFanOn"),
         strict_tcp=True,
+        brush_mode="brushdata_arg",
     )
+    assert report.is_valid, report.format_summary()
+
+
+# ---------------- setbrush 写法（默认）：PaintL 4 参数 + SetBrush ----------------
+
+def test_setbrush_4arg_paintl_valid_by_default() -> None:
+    """默认 setbrush 模式下，4 参数 PaintL（无 brushdata）合法。"""
+    code = """MODULE M
+    PROC main()
+        SetBrush 1;
+        PaintL p1, v600, z10, tSprayGun\\WObj:=wobjPart;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, controller="IRC5P")  # 默认 setbrush
+    assert not any(i.code == "PNT001" for i in report.issues), report.format_summary()
+
+
+def test_setbrush_5arg_paintc_valid_by_default() -> None:
+    code = """MODULE M
+    PROC main()
+        SetBrush 1;
+        PaintC pMid, pEnd, v600, z10, tSprayGun\\WObj:=wobjPart;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, controller="IRC5P")
+    assert not any(i.code == "PNT001" for i in report.issues), report.format_summary()
+
+
+def test_setbrush_paintl_too_few_args_still_flagged() -> None:
+    """即便 setbrush 模式，PaintL 少于 4 个参数仍属畸形。"""
+    code = """MODULE M
+    PROC main()
+        PaintL p1, v600, z10;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, controller="IRC5P")
+    assert any(i.code == "PNT001" for i in report.errors), report.format_summary()
+
+
+def test_real_m3_setbrush_program_validates() -> None:
+    """真实产线 IPS Paint 程序（SetBrush + 4 参数 PaintL）应通过默认校验。"""
+    code = """MODULE M3
+    LOCAL CONST robtarget p10:=[[967.17,-1332.68,1108.14],[0.025,-0.727,-0.686,0.003],[0,-1,1,-1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    LOCAL CONST robtarget p20:=[[-894.93,-1354.32,1093.02],[0.025,-0.727,-0.686,0.003],[-1,-1,0,-1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    PROC mainM3()
+        AccSet 50,80;
+        ClkReset Runclock;
+        ClkStart Runclock;
+        WaitUntil Hand_A_StartSpray=1 OR A_StartSpray=1;
+        MoveAbsJ jHomePos\\NoEOffs,v600,z50,tool0;
+        PaintL p10,v600,fine,tUserTool0;
+        SetBrush 2;
+        PaintL p20,v600,z30,tUserTool0;
+        SetBrush 1;
+        MoveAbsJ jHomePos\\NoEOffs,v600,z50,tool0;
+        PulseDO\\PLength:=3,B_dopaintfinish;
+        ClkStop Runclock;
+        Runtime:=ClkRead(Runclock);
+        TPWrite "Runtime="\\Num:=Runtime;
+    ENDPROC
+ENDMODULE
+"""
+    report = validate(code, controller="IRC5P", strict_tcp=True)  # 默认 setbrush
     assert report.is_valid, report.format_summary()

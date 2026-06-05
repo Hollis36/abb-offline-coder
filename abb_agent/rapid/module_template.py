@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from abb_agent.config import ControllerKind
+from abb_agent.config import BrushMode, ControllerKind
 
 DEFAULT_TOOL_DATA = (
     "PERS tooldata tSprayGun := [TRUE, "
@@ -176,6 +176,7 @@ def wrap_in_module(
     description: str = "由 abb-agent 自动生成的喷涂程序",
     inject_defaults: bool = True,
     controller: ControllerKind = "IRC5",
+    brush_mode: BrushMode = "setbrush",
 ) -> str:
     """若 LLM 输出缺少 MODULE，自动包裹。
 
@@ -184,7 +185,9 @@ def wrap_in_module(
         module_name: 包裹模块名
         description: 模块顶部注释
         inject_defaults: 若主体没有声明 tool/wobj/speed/brush，是否注入默认值
-        controller: 控制器类型；IRC5P 会注入 brushdata 而非 num
+        controller: 控制器类型；IRC5P 启用喷涂工艺相关注入
+        brush_mode: 仅 IRC5P 生效。"brushdata_arg" 会注入 PERS brushdata 声明；
+            "setbrush"（默认）不注入 brushdata（刷子由 SetBrush n 选择）
     """
     if _has_module_wrapper(code):
         return code
@@ -202,8 +205,8 @@ def wrap_in_module(
             declarations.append(DEFAULT_WOBJ_DATA)
         if not has_speed:
             declarations.append(DEFAULT_SPEED_PAINT)
-        if controller == "IRC5P":
-            # 扫描代码引用的所有 brush 名字，未声明的全部注入
+        if controller == "IRC5P" and brush_mode == "brushdata_arg":
+            # brushdata_arg 写法：扫描代码引用的所有 brush 名字，未声明的全部注入
             referenced = _find_referenced_brushes(code)
             to_inject = [b for b in referenced if b not in existing_brushes]
             if not to_inject and not existing_brushes:
@@ -243,16 +246,27 @@ def ensure_main_proc(code: str, inner_calls: list[str] | None = None) -> str:
     ) if _has_module_wrapper(code) else code + "\n" + main_proc + "\n"
 
 
-def empty_painting_skeleton(*, controller: ControllerKind = "IRC5") -> ModuleSkeleton:
+def empty_painting_skeleton(
+    *, controller: ControllerKind = "IRC5", brush_mode: BrushMode = "setbrush"
+) -> ModuleSkeleton:
     """返回一个标准喷涂程序骨架。
 
-    controller="IRC5P" 时，工艺参数声明使用 brushdata 类型，
-    并在 main() 中以 PaintL TODO 替换 SetDO 注释，引导用户用 ABB Paint 工艺。
+    controller="IRC5P" 时引导用户用 ABB Paint 工艺：
+      - brush_mode="setbrush"（默认）：不声明 brushdata，用 SetBrush n + PaintL/PaintC；
+      - brush_mode="brushdata_arg"：声明 PERS brushdata，PaintL 带 brushdata 形参。
     """
-    if controller == "IRC5P":
+    if controller == "IRC5P" and brush_mode == "brushdata_arg":
         brush_decl = DEFAULT_BRUSH_DATA_IRC5P
         todo = (
             "        ! TODO: 调用 PaintL/PaintC 走 ABB Paint 工艺，引用 bdMain"
+        )
+    elif controller == "IRC5P":
+        brush_decl = (
+            "! 刷子由 SetBrush n 选择（刷子表在控制器 Brush Table 中配置），"
+            "无需 brushdata 声明"
+        )
+        todo = (
+            "        ! TODO: SetBrush n; 然后 PaintL/PaintC 走 ABB Paint 工艺"
         )
     else:
         brush_decl = DEFAULT_BRUSH_DATA

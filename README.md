@@ -78,7 +78,7 @@
 - **完全离线**：所有依赖（LLM、嵌入模型、向量库）本地运行，断网可用
 - **中文自然语言**：用中文描述喷涂需求，自动生成 RAPID 代码
 - **喷涂专精**：内置喷涂场景知识（笔刷工艺、TriggIO 同步、TCP 校准、Z 字扫描等）
-- **双控制器模式**：通用 `IRC5`（MoveL + SetDO）与 `IRC5P`（PaintL/PaintC + brushdata 原生工艺）一键切换
+- **双控制器模式**：通用 `IRC5`（MoveL + SetDO）与 `IRC5P`（`SetBrush` + PaintL/PaintC 原生工艺）一键切换
 - **Pack&Go 一键交付**：`--bundle` 模式直接产出含 `.mod` + `BASE.sys` + `T_ROB1.pgf` + README 的可加载目录
 - **可演进**：RAG 知识库可不断追加新资料，模型可随硬件升级而升级
 - **工业 PC 友好**：CPU 推理，无需独立 GPU，量化模型 4.5GB 内存即可
@@ -184,7 +184,7 @@ abb-agent gen \
 
 ```
 output/MyPaintLine/
-├── PaintProgram.mod   # PaintL/PaintC + brushdata（IRC5P 原生工艺）
+├── PaintProgram.mod   # SetBrush + PaintL/PaintC（IRC5P 原生工艺）
 ├── BASE.sys           # 系统模块：Home 位 + 错误恢复 trap
 ├── T_ROB1.pgf         # XML 任务清单（控制器据此加载）
 └── README.md          # 3 种加载方式 + 上线 4 步清单
@@ -237,6 +237,9 @@ export ABB_AGENT_EMBED_DEVICE="cuda"
 # 全局切到 IRC5P 模式（持久；优先级低于命令行 --controller）
 export ABB_AGENT_RAPID_CONTROLLER=IRC5P
 
+# IRC5P 喷涂工艺写法：setbrush（默认，SetBrush n + 4 参数 PaintL）或 brushdata_arg
+export ABB_AGENT_RAPID_BRUSH_MODE=setbrush
+
 # 用现场实际 IO 信号集覆盖默认白名单（JSON 数组字符串）
 export ABB_AGENT_RAPID_IO_WHITELIST='["doSpray","doFan","doAtom","doColorA"]'
 ```
@@ -250,11 +253,15 @@ export ABB_AGENT_RAPID_IO_WHITELIST='["doSpray","doFan","doAtom","doColorA"]'
 | 维度 | `IRC5`（默认） | `IRC5P` |
 |---|---|---|
 | 适用控制器 | 通用 IRC5 / OmniCore，无 Paint 选项 | IRC5P / OmniCore Paint，含 RobotWare Paint (687-1) |
-| 喷涂直线 | `MoveL` + `SetDO doSprayOn,1/0` | `PaintL target, speed, brushdata, zone, tool` |
-| 喷涂圆弧 | `MoveC` + `SetDO` | `PaintC pMid, pEnd, speed, brushdata, zone, tool` |
-| 工艺数据 | `PERS num` 占位 | `PERS brushdata` 原生类型 |
-| 开关枪时序 | 用户手动 `SetDO` 配 `WaitTime` | brushdata 的 `preOpen` / `postClose` 自动管理 |
-| 校验新增 | — | PNT001 (PaintL 缺 brushdata) / TCP001 (默认 TCP) / IO001 (白名单) |
+| 喷涂直线 | `MoveL` + `SetDO doSprayOn,1/0` | `SetBrush n` + `PaintL target, speed, zone, tool`（4 参数） |
+| 喷涂圆弧 | `MoveC` + `SetDO` | `SetBrush n` + `PaintC pMid, pEnd, speed, zone, tool`（5 参数） |
+| 工艺数据 | `PERS num` 占位 | `SetBrush n` 选控制器 Brush Table（无需 brushdata 声明） |
+| 开关枪时序 | 用户手动 `SetDO` 配 `WaitTime` | 刷子表内部 `preOpen` / `postClose` 自动管理 |
+| 校验新增 | — | PNT001 (PaintL/PaintC 参数不足) / TCP001 (默认 TCP) / IO001 (白名单) |
+
+> **喷涂工艺写法（`brush_mode`）**：IRC5P 默认 `setbrush`（如上，`SetBrush n` + 4 参数 `PaintL`，现场产线常见）。
+> 另有兼容的 `brushdata_arg` 写法（`PaintL target, speed, brushdata, zone, tool`，brushdata 作位置参数），
+> 通过 `export ABB_AGENT_RAPID_BRUSH_MODE=brushdata_arg` 切换。
 
 切换方式：命令行 `--controller IRC5P` 单次覆盖，或 `export ABB_AGENT_RAPID_CONTROLLER=IRC5P` 持久化。
 
@@ -279,12 +286,12 @@ export ABB_AGENT_RAPID_IO_WHITELIST='["doSpray","doFan","doAtom","doColorA"]'
 
 | 需求示例 | IRC5 输出 | IRC5P 输出 |
 |---------|------------------|------------------|
-| "直线扫描，从 P1 到 P2" | `MoveL` + `SetDO doSprayOn` | `PaintL p, vPaint, bdMain, z10, tSprayGun` |
-| "Z 字扫描，行距 50mm" | `FOR` + 交替 `MoveL` + `SetDO` | `MoveL` 定位 + `PaintL` 喷涂 |
-| "圆弧轨迹喷涂" | `MoveC` + `SetDO` | `PaintC` + brushdata |
-| "TriggIO 精确同步喷枪开关" | `TriggIO` + `TriggL` | brushdata 内部时序自动管 |
+| "直线扫描，从 P1 到 P2" | `MoveL` + `SetDO doSprayOn` | `SetBrush 1` + `PaintL p, vPaint, z10, tSprayGun` |
+| "Z 字扫描，行距 50mm" | `FOR` + 交替 `MoveL` + `SetDO` | `SetBrush n` + `MoveL` 定位 + `PaintL` 喷涂 |
+| "圆弧轨迹喷涂" | `MoveC` + `SetDO` | `SetBrush n` + `PaintC` |
+| "TriggIO 精确同步喷枪开关" | `TriggIO` + `TriggL` | 刷子表内部时序自动管 |
 | "喷枪 TCP 校准 4 点法" | `TPWrite` 引导 + `ConfL\\Off` | 同左 |
-| "增加流量调到 90%" | `PERS num nFlowRate := 90;` | `PERS brushdata bdMain := [90, ...]` |
+| "增加流量调到 90%" | `PERS num nFlowRate := 90;` | 在控制器 Brush Table 第 n 号刷子里设流量 90 |
 
 ## 项目结构
 

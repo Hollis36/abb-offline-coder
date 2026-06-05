@@ -55,7 +55,7 @@ def test_irc5p_examples_use_paint_instructions() -> None:
     text = few_shot_prompt("IRC5P")
     assert _PAINTL_INSTR_RE.search(text), "IRC5P few-shot 应包含 PaintL 指令"
     assert "PaintC" in text, "IRC5P few-shot 应包含 PaintC 示例"
-    assert "brushdata" in text, "IRC5P few-shot 应使用 brushdata"
+    assert "SetBrush" in text, "IRC5P few-shot 应使用 SetBrush 选刷子"
     # 不能用 SetDO 切换喷涂主信号
     assert "SetDO doSprayOn" not in text, "IRC5P few-shot 不应用 SetDO doSprayOn 凑喷涂"
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from abb_agent.config import ControllerKind
+from abb_agent.config import BrushMode, ControllerKind
 
 
 @dataclass(frozen=True)
@@ -105,17 +105,29 @@ def linear_scan(
     spray_signal: str = "doSprayOn",
     controller: ControllerKind = "IRC5",
     brush: str = "bdMain",
+    brush_mode: BrushMode = "setbrush",
+    brush_index: int = 1,
 ) -> str:
     """生成「定位 → 喷涂直线段」RAPID 片段。
 
     IRC5  (默认): MoveL 定位 → SetDO 开 → MoveL 喷 → SetDO 关。
-    IRC5P:       MoveL 定位 → PaintL（brushdata 自动调度工艺）。
+    IRC5P:       MoveL 定位 → PaintL。
+      - brush_mode="setbrush"（默认）：SetBrush n 选刷子表 + 4 参数 PaintL；
+      - brush_mode="brushdata_arg"：PaintL 带 brushdata 形参（5 参数）。
     """
     if controller == "IRC5P":
+        if brush_mode == "brushdata_arg":
+            return (
+                f"        ! 直线扫描喷涂段 (IRC5P PaintL + brushdata)\n"
+                f"        MoveL {robtarget_inline(start)}, v500, fine, {tool}\\WObj:={wobj};\n"
+                f"        PaintL {robtarget_inline(end)}, {speed}, {brush}, {zone}, "
+                f"{tool}\\WObj:={wobj};"
+            )
         return (
-            f"        ! 直线扫描喷涂段 (IRC5P PaintL)\n"
+            f"        ! 直线扫描喷涂段 (IRC5P PaintL + SetBrush)\n"
             f"        MoveL {robtarget_inline(start)}, v500, fine, {tool}\\WObj:={wobj};\n"
-            f"        PaintL {robtarget_inline(end)}, {speed}, {brush}, {zone}, "
+            f"        SetBrush {brush_index};\n"
+            f"        PaintL {robtarget_inline(end)}, {speed}, {zone}, "
             f"{tool}\\WObj:={wobj};"
         )
     return (
@@ -148,18 +160,28 @@ def zigzag_scan(
     spray_signal: str = "doSprayOn",
     controller: ControllerKind = "IRC5",
     brush: str = "bdMain",
+    brush_mode: BrushMode = "setbrush",
+    brush_index: int = 1,
 ) -> str:
     """Z 字扫描喷涂。
 
     工件坐标系下从 origin 开始，沿 X 方向往返，每次 Y 偏移 row_spacing。
 
     IRC5  : 行间 MoveL 定位 + SetDO 切换喷涂状态。
-    IRC5P : 行间 MoveL 定位 + PaintL 走工艺（brushdata 自动管理开关枪时序）。
+    IRC5P : 行间 MoveL 定位 + PaintL 走工艺。
+      - brush_mode="setbrush"（默认）：开头 SetBrush n 选刷子表 + 4 参数 PaintL；
+      - brush_mode="brushdata_arg"：PaintL 带 brushdata 形参（5 参数）。
     """
     num_rows = int(height / row_spacing) + 1
     is_paint = controller == "IRC5P"
-    header = "        ! Z 字扫描喷涂" + (" (IRC5P PaintL)" if is_paint else "")
-    lines = [header]
+    setbrush = is_paint and brush_mode == "setbrush"
+    if is_paint:
+        suffix = " (IRC5P PaintL + SetBrush)" if setbrush else " (IRC5P PaintL + brushdata)"
+    else:
+        suffix = ""
+    lines = ["        ! Z 字扫描喷涂" + suffix]
+    if setbrush:
+        lines.append(f"        SetBrush {brush_index};")
     for i in range(num_rows):
         y_off = i * row_spacing
         # 偶数行向右，奇数行向左
@@ -172,17 +194,22 @@ def zigzag_scan(
         lines.append(
             f"        MoveL {robtarget_inline(p_start)}, v500, fine, {tool}\\WObj:={wobj};"
         )
-        if is_paint:
-            lines.append(
-                f"        PaintL {robtarget_inline(p_end)}, {speed}, {brush}, {zone}, "
-                f"{tool}\\WObj:={wobj};"
-            )
-        else:
+        if not is_paint:
             lines.append(f"        SetDO {spray_signal}, 1;")
             lines.append(
                 f"        MoveL {robtarget_inline(p_end)}, {speed}, {zone}, {tool}\\WObj:={wobj};"
             )
             lines.append(f"        SetDO {spray_signal}, 0;")
+        elif setbrush:
+            lines.append(
+                f"        PaintL {robtarget_inline(p_end)}, {speed}, {zone}, "
+                f"{tool}\\WObj:={wobj};"
+            )
+        else:
+            lines.append(
+                f"        PaintL {robtarget_inline(p_end)}, {speed}, {brush}, {zone}, "
+                f"{tool}\\WObj:={wobj};"
+            )
     return "\n".join(lines)
 
 
@@ -254,12 +281,24 @@ def arc_segment(
     wobj: str = "wobjPart",
     controller: ControllerKind = "IRC5",
     brush: str = "bdMain",
+    brush_mode: BrushMode = "setbrush",
+    brush_index: int = 1,
 ) -> str:
-    """圆弧路径段。IRC5 用 MoveC；IRC5P 用 PaintC（带 brushdata）。"""
+    """圆弧路径段。IRC5 用 MoveC；IRC5P 用 PaintC。
+
+    IRC5P setbrush（默认）：SetBrush n + 5 参数 PaintC；
+    IRC5P brushdata_arg：6 参数 PaintC（带 brushdata 形参）。
+    """
     if controller == "IRC5P":
+        if brush_mode == "brushdata_arg":
+            return (
+                f"        PaintC {robtarget_inline(p_mid)}, {robtarget_inline(p_end)}, "
+                f"{speed}, {brush}, {zone}, {tool}\\WObj:={wobj};"
+            )
         return (
+            f"        SetBrush {brush_index};\n"
             f"        PaintC {robtarget_inline(p_mid)}, {robtarget_inline(p_end)}, "
-            f"{speed}, {brush}, {zone}, {tool}\\WObj:={wobj};"
+            f"{speed}, {zone}, {tool}\\WObj:={wobj};"
         )
     return (
         f"        MoveC {robtarget_inline(p_mid)}, {robtarget_inline(p_end)}, "
