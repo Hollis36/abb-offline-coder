@@ -15,6 +15,7 @@
 \usepackage{listings}
 \usepackage{pifont}
 \usepackage{booktabs}
+\usepackage{qrcode}
 
 \graphicspath{{../docs/screenshots/}}
 
@@ -356,11 +357,21 @@ ENDMODULE
   \item 方法论\textbf{可迁移}到更广的封闭工业机器人 / PLC 生态
 \end{itemize}
 \vfill
+\begin{columns}[c]
+\begin{column}{0.66\textwidth}
 \begin{center}
-{\color{abbgray}\small 源码 \texttt{github.com/Hollis36/abb-offline-coder}\quad·\quad
-演示 \texttt{hollis36.github.io/abb-offline-coder}}\\[6pt]
+{\color{abbgray}\small 源码 \texttt{github.com/Hollis36/abb-offline-coder}\\[2pt]
+演示 \texttt{hollis36.github.io/abb-offline-coder}}\\[10pt]
 {\Large\bfseries\color{abbred} 谢谢！恳请指正}
 \end{center}
+\end{column}
+\begin{column}{0.3\textwidth}
+\begin{center}
+\qrcode[height=2.3cm]{https://hollis36.github.io/abb-offline-coder/}\\[4pt]
+{\scriptsize\color{abbgray}扫码看在线演示}
+\end{center}
+\end{column}
+\end{columns}
 \note{\textbf{总结（约 30 秒）}：无网+高门槛痛点 $\to$ 完全离线中文助手，数小时压到数十秒；
 \textbf{156 测试、可复现}；方法论可迁移；已开源。\\
 \textit{提示：收尾有力，最后一句放慢、抬头、微笑；停顿后等待提问。随后进入 Q\&A（见讲稿附页）。}}
