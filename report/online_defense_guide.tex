@@ -1,0 +1,165 @@
+% =====================================================================
+%  在线答辩指南与检查清单 —— abb-offline-coder
+%  比赛赛项：人工智能创新赛   队伍：人工智能创新001
+%  编译：xelatex online_defense_guide.tex
+% =====================================================================
+\documentclass[a4paper,11pt,fontset=none]{ctexart}
+\usepackage[a4paper,margin=2.2cm,headheight=26pt]{geometry}
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{pifont}
+\usepackage{url}
+
+\definecolor{abbred}{RGB}{217,74,31}
+\definecolor{abbdark}{RGB}{24,24,24}
+\definecolor{abbgray}{RGB}{95,95,95}
+\definecolor{abblight}{RGB}{246,242,240}
+\definecolor{boxblue}{RGB}{226,236,246}
+\definecolor{linegray}{RGB}{205,205,205}
+
+\newsavebox{\hdrLbox}   % 页眉左侧在正文环境预渲染，规避 fancyhdr 输出例程 CJK 丢字
+\pagestyle{fancy}\fancyhf{}
+\AtBeginDocument{\savebox{\hdrLbox}{\small\sffamily 人工智能创新赛 · 在线答辩指南}}
+\fancyhead[L]{\usebox{\hdrLbox}}
+\fancyhead[R]{\small\sffamily abb-offline-coder}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{linegray}\leaders\hrule height \headrulewidth\hfill}}
+\setlength{\parindent}{0pt}
+
+\newcommand{\sect}[1]{\par\vspace{7pt}\noindent
+  {\sffamily\bfseries\large\color{abbdark}\ding{110}\ #1}\\[-3pt]
+  {\color{abbred}\rule{\linewidth}{0.8pt}}\par\vspace{3pt}}
+\setlist{itemsep=2pt,topsep=2pt,parsep=0pt}
+\renewcommand{\arraystretch}{1.25}
+\newcommand{\cb}{$\square$\ }
+
+\begin{document}
+
+% ---------- 抬头 ----------
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[abbred] (current page.north west) rectangle ([yshift=-0.9cm]current page.north east);
+\end{tikzpicture}
+\vspace*{0.15cm}
+\begin{center}
+{\sffamily\bfseries\color{abbgray}\normalsize 人工智能创新赛 · 项目答辩}\\[3pt]
+{\sffamily\Huge\bfseries\color{abbdark} 在线答辩指南 \& 检查清单}\\[3pt]
+{\color{abbred}\rule{4.5cm}{1.6pt}}\\[4pt]
+{\large abb-offline-coder · 队伍：人工智能创新001}
+\end{center}
+\vspace{2pt}
+
+\noindent
+\begin{tikzpicture}
+\node[draw=abbred,line width=0.8pt,rounded corners=4pt,fill=abblight,inner sep=8pt,
+  text width=\dimexpr\linewidth-18pt\relax]{%
+\small\textbf{\color{abbred}一句话策略}\quad 线上没有第二块投影幕——\textbf{只共享幻灯窗口}，
+把\textbf{演讲者备注放到第二块屏 / 手机 / 纸质}；\textbf{善用“有网”这一条件}现场打开在线演示页，
+但务必强调\textbf{产品本身是离线的}。};
+\end{tikzpicture}
+
+% ---------- 1 设备与网络 ----------
+\sect{1. 设备与网络（开讲前 30 分钟搞定）}
+\begin{itemize}
+  \item \textbf{网络}：有线网优先；关掉占带宽的下载/云同步；\textbf{手机热点}作备份，确认能一键切换。
+  \item \textbf{摄像头}：镜头与视线\textbf{平齐}（垫高电脑），正面补光，背景整洁或用纯色虚拟背景。
+  \item \textbf{声音}：用耳麦避免回声；提前在会议软件里\textbf{测麦克风/扬声器}；安静环境。
+  \item \textbf{软件}：提前装好并登录会议软件（腾讯会议/钉钉/Zoom 等），熟悉\textbf{共享屏幕、静音、聊天区、举手}。
+  \item \textbf{勿扰}：开启系统“专注/勿扰”，退出微信/QQ/邮件，避免弹窗与提示音泄露或打断。
+\end{itemize}
+
+% ---------- 2 屏幕共享 ----------
+\sect{2. 屏幕共享策略（线上最关键的一步）}
+\begin{itemize}
+  \item \textbf{共享“窗口”而非“整个桌面”}：只把幻灯放映窗口共享出去，备注与通知不会被看到。
+  \item \textbf{双屏（推荐）}：主屏全屏放映 \texttt{slides.pdf}，副屏开 \texttt{script.pdf} 或 \texttt{slides\_notes.pdf} 看备注。
+  \item \textbf{单屏方案}：备注\textbf{打印}或放\textbf{手机/平板}；或用 PowerPoint/Keynote/pdfpc 的“演讲者视图”（仅本地可见）。
+  \item \textbf{放映前做三件事}：\ding{172}隐藏书签栏/桌面杂物；\ding{173}光标调大或开“激光笔/批注”；\ding{174}先共享、再确认“老师能看到我的幻灯吗？”
+\end{itemize}
+
+\begin{table}[h]
+\centering\small
+\caption*{\small\textbf{材料用法对照（按你的设备选）}}
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{设备情况} & \textbf{怎么用我们这套材料} \\
+\midrule
+双屏 & 主屏放映 \texttt{slides.pdf}（共享此窗口）+ 副屏看 \texttt{slides\_notes.pdf}（幻灯+备注并排） \\
+单屏 + 手机 & 共享 \texttt{slides.pdf}；手机打开 \texttt{script.pdf}（逐页讲稿）对照 \\
+演讲者视图 & 用 PPT/Keynote/pdfpc 放映，备注只你可见；备注文字见 \texttt{script.pdf} \\
+兜底 & 共享失败时，直接发 \texttt{full\_package.pdf} 给评委并口述 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------- 3 现场演示 ----------
+\sect{3. 善用“在线=有网”：现场演示（加分项）}
+\begin{itemize}
+  \item \textbf{开演示页}：现场打开 \url{https://hollis36.github.io/abb-offline-coder/}，演示交互式 Pipeline + 真实 \texttt{.mod} 输出。
+  \item \textbf{话术防误解}：一句话点明——“\textbf{演示页只是为各位老师直观展示；产品本身在断网工业 PC 上运行，数据不出厂}。”
+  \item \textbf{可复现实证}：如条件允许，现场跑一次 \texttt{pytest tests/unit}（秒级，156 通过）体现“可复现”。
+  \item \textbf{风险控制}：演示前\textbf{预加载页面}；准备\textbf{录屏 + 截图}作 backup，卡顿就立刻切静态图，不在卡顿上停留。
+\end{itemize}
+
+% ---------- 4 表达调整 ----------
+\sect{4. 把“线下舞台提示”换成“线上动作”}
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}X X@{}}
+\toprule
+\textbf{线下（讲稿里的提示）} & \textbf{线上对应动作} \\
+\midrule
+目光扫视全体评委 & \textbf{看摄像头}（不要盯着自己的画面），偶尔环视聊天区 \\
+用手指点屏幕关键行 & 用\textbf{鼠标高亮 / 激光笔 / 会议批注}圈出 \texttt{PaintL}、错误码等 \\
+肢体/站姿强调 & 用\textbf{语气、停顿、重音}强调；适当露脸保持连接 \\
+停顿等待提问 & 明确说“\textbf{以上是我的汇报，请各位老师批评指正}”，再留意\textbf{举手/聊天区} \\
+翻页节奏 & 自己掌控翻页；翻页后停 1 秒再讲，避免音画不同步 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------- 5 流程计时 ----------
+\sect{5. 流程与计时}
+\begin{itemize}
+  \item \textbf{开场即确认}：“我的声音和屏幕是否清晰？”——得到确认再开始，避免白讲。
+  \item \textbf{控时}：讲解 \textbf{7--8 分钟}（见 \texttt{script.pdf} 每页建议时长），屏幕角落放\textbf{计时器}。
+  \item \textbf{Q\&A}：见讲稿附页 6 条预设问答；答不出时坦诚“这是我们下一步工作”，不硬撑。
+  \item \textbf{收尾}：答完明确说“感谢各位老师”，并\textbf{停止共享、交回主持人}。
+\end{itemize}
+
+% ---------- 6 检查清单 ----------
+\sect{6. 赛前检查清单（开讲前逐项打勾）}
+\begin{minipage}[t]{0.5\linewidth}
+\textbf{\color{abbred}环境 / 设备}
+\begin{itemize}[label={}]
+  \item \cb 网络稳定，手机热点备份已测
+  \item \cb 摄像头平视、补光、背景整洁
+  \item \cb 耳麦测试无回声、音量正常
+  \item \cb 系统“勿扰”、退出聊天软件
+  \item \cb 电量充足 / 接通电源
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}
+\textbf{\color{abbred}内容 / 演练}
+\begin{itemize}[label={}]
+  \item \cb \texttt{slides/full\_package/script} 本地就位
+  \item \cb 共享“窗口”模式演练过
+  \item \cb 备注在副屏 / 手机 / 纸质
+  \item \cb 演示页已预加载 + 截图备份
+  \item \cb 计时器就位；试讲 $\ge 2$ 遍、卡进 8 分钟
+\end{itemize}
+\end{minipage}
+
+\vspace{8pt}
+\begin{center}{\color{linegray}\rule{0.5\textwidth}{0.6pt}}\\[4pt]
+{\sffamily\small\color{abbgray} 人工智能创新赛 · 在线答辩指南 \quad|\quad 队伍：人工智能创新001 \quad|\quad abb-offline-coder}\end{center}
+
+\end{document}
