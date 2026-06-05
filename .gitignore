@@ -22,7 +22,9 @@ env/
 *.swo
 
 # AI/Claude metadata
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
 CLAUDE.md
 
 # 测试 & 覆盖率
