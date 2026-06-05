@@ -14,6 +14,7 @@
 \usepackage{amssymb}
 \usepackage{pifont}
 \usepackage{qrcode}
+\graphicspath{{../docs/field/}}
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
 
@@ -84,6 +85,12 @@
   \textbf{1.} 完全离线工业代码生成\quad\textbf{2.} 官方手册 RAG 抑幻觉\\
   \textbf{3.} IRC5/IRC5P 双控制器自适应\quad\textbf{4.} 生成—校验闭环\\
   \textbf{5.} Pack\&Go 一键交付\quad\textbf{6.} 一键离线迁移\quad\textbf{7.} 安全护栏内建};
+% 左栏底部：真实落地实景（现场实拍）
+\node[panel,text width=8.0cm,anchor=north west,fill=white] at (0.1,5.95) (pimg){%
+  \hd{真实落地实景（现场实拍）}\\[3pt]
+  \centering
+  \includegraphics[height=2.6cm]{field-robot.jpg}\hspace{3pt}\includegraphics[height=2.6cm]{field-qc.jpg}\\[2pt]
+  {\scriptsize\color{abbgray} 机器人执行本工具生成的程序喷涂 · 成品膜厚检测 45.9–61.3\,$\mu$m}};
 
 % ---------- 中栏 ----------
 \node[anchor=north,font=\footnotesize\sffamily\bfseries\color{abbred}] at (13.6,\cyA-0.2) (aTitle){系统四层架构};
