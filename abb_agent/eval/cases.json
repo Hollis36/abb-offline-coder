@@ -1,0 +1,50 @@
+[
+  {
+    "id": "irc5_line",
+    "query": "从 P1 到 P2 沿直线喷涂，速度 v200，先到位再开喷",
+    "controller": "IRC5",
+    "must_include": ["MoveL", "SetDO"],
+    "must_not_include": ["brushdata"],
+    "expect_category": "linear_scan"
+  },
+  {
+    "id": "irc5_zigzag",
+    "query": "对 600x400 矩形面做 Z 字扫描喷涂，行距 50mm，速度 v200",
+    "controller": "IRC5",
+    "must_include": ["MoveL", "SetDO"],
+    "must_not_include": ["brushdata"],
+    "expect_category": "zigzag_scan"
+  },
+  {
+    "id": "irc5_arc",
+    "query": "沿圆弧轨迹喷涂，3 点定义圆弧，速度 v200",
+    "controller": "IRC5",
+    "must_include": ["MoveC"],
+    "must_not_include": ["brushdata"],
+    "expect_category": "arc_scan"
+  },
+  {
+    "id": "irc5p_line",
+    "query": "在平板上喷一道直线，速度 v200",
+    "controller": "IRC5P",
+    "must_include": ["PaintL", "brushdata"],
+    "must_not_include": ["SetDO doSprayOn"],
+    "expect_category": "linear_scan"
+  },
+  {
+    "id": "irc5p_zigzag",
+    "query": "在 500x300mm 平板上 Z 字喷涂，行距 50mm",
+    "controller": "IRC5P",
+    "must_include": ["PaintL", "brushdata"],
+    "must_not_include": ["SetDO doSprayOn"],
+    "expect_category": "zigzag_scan"
+  },
+  {
+    "id": "irc5p_arc",
+    "query": "沿圆弧轨迹喷涂曲面，3 点定义圆弧",
+    "controller": "IRC5P",
+    "must_include": ["PaintC", "brushdata"],
+    "must_not_include": ["SetDO doSprayOn"],
+    "expect_category": "arc_scan"
+  }
+]

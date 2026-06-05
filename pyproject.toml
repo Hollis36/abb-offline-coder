@@ -57,6 +57,7 @@ include = ["abb_agent*"]
 [tool.setuptools.package-data]
 "abb_agent.llm" = ["prompts/*.md", "prompts/*.j2"]
 "abb_agent.rapid" = ["templates/*.mod"]
+"abb_agent.eval" = ["cases.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
