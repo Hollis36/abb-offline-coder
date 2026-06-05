@@ -5,7 +5,7 @@
 - **队伍名称**：人工智能创新001
 - **比赛赛项**：人工智能创新赛
 
-本目录含五份参赛材料：
+本目录含七份参赛材料：
 
 | 文件 | 内容 | 规格 |
 |------|------|------|
@@ -13,7 +13,9 @@
 | [`evidence.tex`](evidence.tex) / [`evidence.pdf`](evidence.pdf) | **项目佐证材料**（Git 历史 · 单元测试实跑 · 覆盖率 · 核心能力实证 · 真实产物 · 公开发布物料） | A4 · 8 页 |
 | [`poster.tex`](poster.tex) / [`poster.pdf`](poster.pdf) | **项目一图流海报**（答辩展板 / 路演，一眼看全） | A4 横版 · 1 页 |
 | [`slides.tex`](slides.tex) / [`slides.pdf`](slides.pdf) | **答辩幻灯**（Beamer 16:9，10 页内） | 16:9 · 10 页 |
-| [`combined.tex`](combined.tex) / [`combined.pdf`](combined.pdf) | **合订本**（研究报告 + 佐证材料附录，单文件提交用） | A4 · 29 页 |
+| [`script.tex`](script.tex) / [`script.pdf`](script.pdf) | **答辩讲稿**（逐页口语稿 + 舞台提示 + 预设问答 Q&A） | A4 · 3 页 |
+| [`combined.tex`](combined.tex) / [`combined.pdf`](combined.pdf) | **合订本**（研究报告 + 佐证材料附录） | A4 · 29 页 |
+| [`full_package.tex`](full_package.tex) / [`full_package.pdf`](full_package.pdf) | **全套提交包**（报告 + 佐证 + 海报 + 幻灯，单文件提交用） | A4/横版/16:9 · 42 页 |
 
 > 佐证材料中的单元测试与覆盖率均为**可复现实测**（156 个用例全部通过，无需 GPU/Ollama）；
 > 知识库/端到端等数据标注为「项目记录」，来源于 `PROJECT_STATUS.md` / `EXECUTION_LOG.md`。
@@ -28,8 +30,10 @@ xelatex main.tex     && xelatex main.tex       # 研究报告（两次：目录/
 xelatex evidence.tex && xelatex evidence.tex   # 佐证材料（需能读到 ../docs/screenshots/*.png）
 xelatex poster.tex                             # 海报（一次即可）
 xelatex slides.tex   && xelatex slides.tex     # 答辩幻灯（Beamer）
-# 合订本：须先生成 main.pdf 与 evidence.pdf，再编译两次（封面分隔页用 overlay 需二次定位）
-xelatex combined.tex && xelatex combined.tex
+xelatex script.tex   && xelatex script.tex     # 答辩讲稿
+# 合订本/全套包：须先生成 main/evidence(/poster/slides).pdf，再编译两次（分隔页 overlay 需二次定位）
+xelatex combined.tex     && xelatex combined.tex      # 合订本（报告+佐证）
+xelatex full_package.tex && xelatex full_package.tex  # 全套提交包（报告+佐证+海报+幻灯）
 ```
 
 或使用 `latexmk`：

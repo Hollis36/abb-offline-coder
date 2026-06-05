@@ -1,0 +1,180 @@
+% =====================================================================
+%  答辩讲稿（幻灯备注稿）—— abb-offline-coder
+%  比赛赛项：人工智能创新赛   队伍：人工智能创新001
+%  编译：xelatex script.tex
+% =====================================================================
+\documentclass[a4paper,11pt,fontset=none]{ctexart}
+\usepackage[a4paper,margin=2.3cm,headheight=26pt]{geometry}
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+\newsavebox{\hdrLbox}   % 页眉左侧在正文环境预渲染，规避 fancyhdr 输出例程里 CJK 字体丢失
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{pifont}
+
+\definecolor{abbred}{RGB}{217,74,31}
+\definecolor{abbdark}{RGB}{24,24,24}
+\definecolor{abbgray}{RGB}{95,95,95}
+\definecolor{abblight}{RGB}{246,242,240}
+\definecolor{linegray}{RGB}{205,205,205}
+
+\pagestyle{fancy}\fancyhf{}
+\AtBeginDocument{\savebox{\hdrLbox}{\small\sffamily 人工智能创新赛 · 答辩讲稿}}
+\fancyhead[L]{\usebox{\hdrLbox}}
+\fancyhead[R]{\small\sffamily abb-offline-coder}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{linegray}\leaders\hrule height \headrulewidth\hfill}}
+\setlength{\parindent}{0pt}
+
+% 每页幻灯讲稿的标题条
+\newcommand{\slidehead}[3]{%
+  \vspace{9pt}\noindent
+  \colorbox{abbred}{\textcolor{white}{\sffamily\bfseries\,第 #1 页\,}}\;%
+  {\sffamily\bfseries\large\color{abbdark} #2}\hfill
+  {\sffamily\small\color{abbgray} 建议时长 #3}\\[1pt]
+  {\color{abbred}\rule{\linewidth}{0.8pt}}\par\vspace{3pt}}
+\newcommand{\cue}[1]{\par\vspace{1pt}{\small\color{abbgray}\ding{228}\,\textit{舞台提示：}#1}\par}
+
+\begin{document}
+
+% ---------- 抬头 ----------
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[abbred] (current page.north west) rectangle ([yshift=-0.9cm]current page.north east);
+\end{tikzpicture}
+\vspace*{0.2cm}
+\begin{center}
+{\sffamily\bfseries\color{abbgray}\normalsize 人工智能创新赛 · 项目答辩}\\[4pt]
+{\sffamily\Huge\bfseries\color{abbdark} 答辩讲稿（幻灯备注稿）}\\[3pt]
+{\color{abbred}\rule{4.5cm}{1.6pt}}\\[5pt]
+{\large abb-offline-coder · 面向 ABB 喷涂机器人的离线 AI 编程助手}\\[6pt]
+{\small\color{abbgray} 队伍：人工智能创新001 \quad|\quad 全文约 1100 字 · 建议总时长 7–8 分钟}
+\end{center}
+\vspace{4pt}
+
+\noindent
+\begin{tikzpicture}
+\node[draw=abbred,line width=0.8pt,rounded corners=4pt,fill=abblight,inner sep=8pt,
+  text width=\dimexpr\linewidth-18pt\relax]{%
+\small\textbf{\color{abbred}使用说明}\quad 本讲稿与 \texttt{slides.pdf} 一一对应（共 10 页）。
+每页给出\textbf{口语化讲稿}（可直接照读）与\textbf{舞台提示}（节奏/动作/重音）。
+建议先通读 2 遍，再脱稿；加粗处为重音与关键数据，务必讲清。};
+\end{tikzpicture}
+
+% ================= 逐页讲稿 =================
+
+\slidehead{1}{封面 · 开场}{30 秒}
+各位评委老师好！我们是\textbf{人工智能创新001}代表队。今天答辩的项目是
+\textbf{abb-offline-coder}——一个面向 ABB 喷涂机器人的\textbf{离线} AI 编程助手。
+用一句话概括它做什么：\textbf{把中文一句话，变成可以直接上机的 ABB RAPID 喷涂程序，而且全程不联网}。
+\cue{开场放稳，语速略慢；报清队名与项目名，目光扫视全体评委后再翻页。}
+
+\slidehead{2}{痛点 · 为什么做}{50 秒}
+先说我们为什么做这件事。喷涂机器人编程有\textbf{“三高一隔离”}的痛点：
+RAPID 是厂商专有语言，喷涂还要叠加笔刷工艺、喷枪时序、TCP 标定、IO 配置，\textbf{门槛高}；
+一个信号没在控制器里注册，上机就报 \textbf{40212} 错误，\textbf{试错贵}；
+培养一名能独立编程的工程师要\textbf{以月计}，\textbf{对人依赖重}。
+更关键的是——喷涂车间出于工艺保密和安全，往往是\textbf{物理隔离、完全没有网络}的。
+这意味着 Copilot、ChatGPT 这些云端工具在现场\textbf{根本用不了}，现场数据也\textbf{不允许外传}。
+所以，我们需要一个\textbf{完全离线、又懂喷涂}的中文编程助手。
+\cue{“三高一隔离”重读；讲到 40212 可停顿半拍，强调“现场真问题”。}
+
+\slidehead{3}{方案与定位}{35 秒}
+我们的方案就是这句话——\textbf{把中文一句话变成 RAPID 喷涂程序，本地小模型加官方手册 RAG，工业 PC 断网可用}。
+具体说：用户用\textbf{中文}描述需求，系统直接产出符合 ABB 规范、能导入 RobotStudio 的 \texttt{.mod} 程序。
+之所以能离线，靠三点：\textbf{本地量化的 Qwen2.5-Coder 模型，纯 CPU 就能跑}；
+\textbf{官方手册做 RAG 检索}；以及\textbf{数据全程不出厂}。
+\cue{这页是“电梯演讲”，节奏明快、自信；三点可掰手指强调。}
+
+\slidehead{4}{系统设计 · 架构与流水线}{50 秒}
+系统是清晰的\textbf{四层架构}：CLI 交互层、Agent 编排层，下面是\textbf{检索、推理、后处理}三大能力模块，
+最底层是离线知识库。一次生成走\textbf{六级流水线}：
+中文需求 → 查询改写 → 混合检索 → 上下文装配 → 本地大模型 → 校验后处理 → 输出 \texttt{.mod}。
+整条流水线是\textbf{纯函数式、数据不可变}，副作用都集中在 Ollama 和 ChromaDB 两个边界上——
+所以它特别\textbf{好测试、可演进，也能完全离线}。
+\cue{指着左右两张图讲；强调“边界”二字，呼应后面高覆盖率。}
+
+\slidehead{5}{关键技术 · RAG + 校验闭环}{55 秒}
+两个最核心的技术。第一是\textbf{领域专精的 RAG}：我们从 \textbf{10 本 ABB 官方手册}切出 \textbf{7497 个片段}
+建向量库，用\textbf{向量加 BM25 混合检索}。这让一个 7B 的小模型，也能正确引用像
+\texttt{MToolTCPCalib}、\texttt{TriggIO} 这种\textbf{连它自己都不知道}的专业指令，大幅\textbf{抑制幻觉}。
+第二是\textbf{生成—校验闭环}：内置 11 类静态校验，每个错误都有\textbf{可追溯的错误码}。
+比如模型漏写了 brushdata 参数，会报 \textbf{PNT001}；引用了没注册的信号，会报 \textbf{IO001}。
+这等于把\textbf{现场才会暴露的高代价错误，提前到生成那一刻就拦下来}。
+\cue{这是技术含金量最高的一页，可适当放慢；念错误码时指屏幕上的黑底实录。}
+
+\slidehead{6}{双控制器自适应 + Pack\&Go}{40 秒}
+两个工程亮点。一是\textbf{双控制器自适应}：同一句中文需求，针对普通 IRC5 控制器会用
+\texttt{MoveL + SetDO} 手动开关枪；针对带 Paint 选项的 IRC5P，会用 \texttt{PaintL + brushdata}
+走原生工艺——\textbf{一键切换}。二是 \textbf{Pack\&Go 一键交付}：一句需求直接产出包含主程序、
+系统模块、任务清单、说明书的\textbf{完整目录}，可以\textbf{直接拖进 RobotStudio 加载}，
+还自动处理了控制器特有的编码细节。
+\cue{强调“同一句话、两种工艺、一键切换”，体现工程成熟度。}
+
+\slidehead{7}{创新点总览}{30 秒}
+总结七个创新点：\textbf{完全离线}的工业代码生成、官方手册 RAG 抑制幻觉、双控制器自适应、
+生成校验闭环、Pack\&Go 交付、一键离线迁移、安全护栏内建。
+而且这套\textbf{“离线 RAG + 领域校验闭环”的范式并不局限于 ABB}——换知识库和校验规则，
+就能迁移到 KUKA、发那科，甚至 PLC。
+\cue{语速可加快，作为“承上启下”；落点在“可迁移”，为下一页的硬数据铺垫。}
+
+\slidehead{8}{工程质量与实测佐证}{45 秒}
+讲点实在的。这些是我们在\textbf{干净环境里现场实测、可复现}的数据：
+\textbf{156 个单元测试全部通过、用时不到 1 秒}，核心逻辑覆盖率 \textbf{92\% 到 100\%}，
+而且跑测试\textbf{不需要 GPU、也不需要启动模型}，任何机器秒级复现。
+代码约 4500 行，知识库 7497 片段，端到端生成 \textbf{20 到 35 秒}。
+右边是我们的\textbf{在线演示页}，可以交互式地看流水线一步步生成 \texttt{.mod}。
+\cue{“可复现”是关键词，重读；如评委有兴趣，可主动提“佐证材料里附了一键复现命令”。}
+
+\slidehead{9}{应用案例 · 车门 Z 字喷涂}{35 秒}
+一个具体例子。用户只说一句\textbf{“600 乘 400 平板做 Z 字扫描，行距 50 毫米”}，
+系统就\textbf{自动补全}了工具坐标、工件坐标、速度、笔刷数据，加上安全模板和中文注释，
+生成这段 IRC5P 程序，\textbf{通过静态校验，可以直接 Pack\&Go 交付}。
+\cue{用手指顺一下左侧代码的关键行（PaintL/brushdata），让评委看到“真能跑”。}
+
+\slidehead{10}{总结 \& 致谢}{30 秒}
+总结一下：我们直面喷涂现场\textbf{“无网 + 高门槛”}的真实痛点，做了一个\textbf{完全离线}的
+中文 AI 编程助手，把原来\textbf{数小时}的专家工作压缩到\textbf{数十秒}。
+工程上也足够成熟——\textbf{156 个测试、可复现}；方法论还能迁移到更广的工业生态。
+源码和在线演示都已开源。\textbf{谢谢各位评委，恳请批评指正！}
+\cue{收尾要有力，最后一句放慢、抬头、微笑；停顿后等待提问。}
+
+% ================= 预设问答 =================
+\vspace{10pt}
+{\color{abbred}\rule{\linewidth}{1.2pt}}\\[3pt]
+{\sffamily\Large\bfseries\color{abbdark} 附：预设问答（Q\,\&\,A 备战）}\par\vspace{4pt}
+
+\begin{description}[leftmargin=1.4em,style=unboxed,itemsep=5pt]
+\item[\color{abbred}Q1. 离线小模型质量够吗？为什么不用更大或云端模型？]
+现场\textbf{无网是硬约束}，云端不在选项内。7B 量化模型配合 RAG 注入官方手册，已能正确引用专业指令；
+更重要的是有\textbf{生成—校验闭环兜底}，不合规代码会被拦截。模型可随硬件升级\textbf{一键替换}，架构无需改动。
+
+\item[\color{abbred}Q2. 生成的代码能直接上机吗？安全怎么保证？]
+\textbf{不直接上机}。我们坚持\textbf{“AI 生成、人工把关”}：必须先在 RobotStudio 仿真、再用示教器
+T1 手动慢速验证。系统提供 TCP 占位检测、IO 白名单、错误恢复模板等护栏，但\textbf{最终由工程师把关}。
+
+\item[\color{abbred}Q3. brushdata 字段顺序随 RobotWare 版本变化，怎么处理？]
+这是已知局限。我们在生成时\textbf{显式插入 WARNING 注释}，提示对照 RobotStudio 的 Brush Table 校核；
+目前靠人工复核兜底，未来计划做 RobotStudio Add-In 自动校核。
+
+\item[\color{abbred}Q4. 知识库怎么更新或扩展到新机型？]
+把新手册或内部示例放进 \texttt{data/raw}，跑一次 \texttt{kb build} 即可\textbf{增量入库}；
+扩展新机型主要是补充对应的 few-shot 示例，\textbf{零代码改动}。
+
+\item[\color{abbred}Q5. 演示页写 67 个测试，你们说 156，是否矛盾？]
+不矛盾。演示页是\textbf{项目早期快照}；当前仓库 HEAD 经我们实测是 \textbf{156 个通过}，正好体现\textbf{持续迭代}。
+佐证材料里附了\textbf{一键复现命令}，评委可当场自验。
+
+\item[\color{abbred}Q6. 这套方案的通用性如何？]
+核心是\textbf{“离线 RAG + 领域校验闭环”范式}：更换知识库、提示词与校验规则，即可迁移到
+KUKA KRL、FANUC TP、安川 INFORM，乃至 PLC 结构化文本，具备清晰的产品化潜力。
+\end{description}
+
+\vspace{8pt}
+\begin{center}{\color{linegray}\rule{0.5\textwidth}{0.6pt}}\\[5pt]
+{\sffamily\small\color{abbgray} 人工智能创新赛 · 答辩讲稿 \quad|\quad 队伍：人工智能创新001 \quad|\quad abb-offline-coder}\end{center}
+
+\end{document}
